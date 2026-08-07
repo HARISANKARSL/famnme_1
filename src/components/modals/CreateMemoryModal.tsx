@@ -25,6 +25,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { validateField, validateTextField, validateDescriptionField, VALIDATION_LIMITS } from '@/utils/validation';
 import { useToast } from '@/components/ui/use-toast';
+import { trackEvent } from '@/services/firebase/analytics.service';
 import {
   Select,
   SelectContent,
@@ -771,12 +772,28 @@ export function CreateMemoryModal({
       };
     });
 
+    let mediaType = "Text";
+    if (!isTextFlow) {
+      if (uploadedFiles.length === 1) {
+        mediaType = uploadedFiles[0].detectedType === 'video' ? "Video" : "Image";
+      } else if (uploadedFiles.length > 1) {
+        mediaType = "Multiple Images";
+      }
+    }
+
+    trackEvent("create_memory_post_started", {
+      post_id: null,
+      media_type: mediaType,
+      tagged_ids: taggedPersonIds,
+    });
+
     try {
       setSubmitProgress(asDraft ? 'Saving draft...' : 'Publishing...');
 
+      let response: any;
       if (isTextFlow) {
         // Text flow now uses unified confirmMemories API
-        await confirmMemories(treeId, {
+        response = await confirmMemories(treeId, {
           title: title.trim(),
           description: description.trim() || undefined,
           memoryType: 'text',
@@ -803,7 +820,7 @@ export function CreateMemoryModal({
           fileId: uf.fileId
         }));
 
-        await confirmMemories(treeId, {
+        response = await confirmMemories(treeId, {
           title: title.trim(),
           description: description.trim(),
           category: category || 'Event',
@@ -819,10 +836,24 @@ export function CreateMemoryModal({
         });
       }
 
+      const createdId = response?.memoryId || response?.id || (Array.isArray(response?.memories) ? response.memories[0]?.memoryId : null);
+
+      trackEvent("create_memory_post_completed", {
+        post_id: createdId || null,
+        media_type: mediaType,
+        tagged_ids: taggedPersonIds,
+      });
+
       onCreated(albumId);
       handleClose();
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : 'Failed to create memory';
+      trackEvent("create_memory_post_failed", {
+        post_id: null,
+        media_type: mediaType,
+        tagged_ids: taggedPersonIds,
+        error: errMsg,
+      });
       setError(errMsg);
       toast({
         title: 'Error Publishing Memory',
@@ -837,8 +868,15 @@ export function CreateMemoryModal({
 
   // ── Helpers ──────────────────────────────────────────────────────────────
 
-  const togglePerson = (id: string) =>
+  const togglePerson = (id: string) => {
+    const isTagged = taggedPersonIds.includes(id);
+    if (isTagged) {
+      trackEvent("post_untagged", { person_id: id });
+    } else {
+      trackEvent("post_tagged", { person_id: id });
+    }
     setTaggedPersonIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
+  };
 
   const filteredPersons = persons.filter(p => {
     if (!personSearch.trim()) return true;

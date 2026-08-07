@@ -273,9 +273,19 @@ export function CreatePostWidget({
   // ── Submit: Memory ──
   const handleSubmitMemory = async () => {
     if (!text.trim() && mediaFiles.length === 0) return
+    const file = mediaFiles[0] || null
+    const mediaType = file
+      ? (file.type.startsWith('video/') ? "Video" : "Image")
+      : "Text";
+
+    trackEvent("create_memory_post_started", {
+      post_id: null,
+      media_type: mediaType,
+      tagged_ids: [],
+    });
+
     setSubmitting(true)
     try {
-      const file = mediaFiles[0] || null
       const memoryType = file
         ? (file.type.startsWith('video/') ? 'video' : file.type.startsWith('audio/') ? 'audio' : 'photo')
         : 'text'
@@ -287,6 +297,13 @@ export function CreatePostWidget({
         privacy: 'tree',
         status: 'published',
       })
+
+      trackEvent("create_memory_post_completed", {
+        post_id: memory.memoryId || memory._id || null,
+        media_type: mediaType,
+        tagged_ids: [],
+      });
+
       setRecentMemory(memory)
       onPostCreated?.()
 
@@ -297,6 +314,12 @@ export function CreatePostWidget({
         closeMode()
       }, 2000)
     } catch (err: any) {
+      trackEvent("create_memory_post_failed", {
+        post_id: null,
+        media_type: mediaType,
+        tagged_ids: [],
+        error: String(err),
+      });
       console.error('Failed to create memory:', err)
       toast({
         title: "Error Creating Memory",
