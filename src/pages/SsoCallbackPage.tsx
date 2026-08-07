@@ -4,6 +4,7 @@ import { Loader2 } from 'lucide-react'
 import { setAuthToken, getAuthToken, isTokenExpired, setCachedUser } from '@/lib/auth'
 import { useAuthStore } from '@/store/authStore'
 import { API_BASE_URL } from '@/config/api'
+import { trackEvent } from '@/services/firebase/analytics.service'
 
 export function SsoCallbackPage() {
   const navigate = useNavigate()
@@ -45,6 +46,7 @@ export function SsoCallbackPage() {
           const data = await res.json()
 
           if (!res.ok) {
+            trackEvent('login_failed', { reason: data.error || 'Google exchange failed' })
             navigate('/login', { replace: true })
             return
           }
@@ -52,10 +54,19 @@ export function SsoCallbackPage() {
           setAuthToken(data.token)
           setCachedUser(data.user)
           setUser(data.user)
+
+          // Track analytics event: sign_up_completed or login
+          if (data.isNewUser || data.user?.isNewUser || data.isNew || data.user?.isNew) {
+            trackEvent('sign_up_completed', { method: 'google' })
+          } else {
+            trackEvent('login', { method: 'google' })
+          }
+
           const returnTo = googleState ? decodeURIComponent(googleState) : '/dashboard'
           navigate(returnTo, { replace: true })
           return
-        } catch {
+        } catch (error) {
+          trackEvent('login_failed', { reason: error instanceof Error ? error.message : 'Google exchange network error' })
           navigate('/login', { replace: true })
           return
         }
@@ -76,6 +87,7 @@ export function SsoCallbackPage() {
         const data = await res.json()
 
         if (!res.ok) {
+          trackEvent('login_failed', { reason: data.error || 'SSO exchange failed' })
           navigate('/login', { replace: true })
           return
         }
@@ -84,8 +96,17 @@ export function SsoCallbackPage() {
         setCachedUser(data.user)
         setUser(data.user)
         localStorage.setItem('webview_mode', '1')
+
+        // Track analytics event: sign_up_completed or login
+        if (data.isNewUser || data.user?.isNewUser || data.isNew || data.user?.isNew) {
+          trackEvent('sign_up_completed', { method: 'sso' })
+        } else {
+          trackEvent('login', { method: 'sso' })
+        }
+
         navigate('/dashboard', { replace: true })
-      } catch {
+      } catch (error) {
+        trackEvent('login_failed', { reason: error instanceof Error ? error.message : 'SSO exchange network error' })
         navigate('/login', { replace: true })
       }
     }
