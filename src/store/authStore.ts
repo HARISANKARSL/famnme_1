@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { getAuthToken, setAuthToken, clearAuthToken, getCachedUser, setCachedUser, isTokenExpired } from '@/lib/auth'
 import { API_BASE_URL } from '@/config/api'
 import { userApi } from '@/api/endpoints'
+import { trackEvent } from '@/services/firebase/analytics.service'
 
 export interface AppUser {
   id: string
@@ -86,8 +87,11 @@ export const useAuthStore = create<AuthState>((set) => ({
     const redirectUri = baseUrl + '/login' + (searchParams || '');
     
     if (mode === 'register') {
+      sessionStorage.setItem('auth_mode', 'register');
+      trackEvent('sign_up_started', { method: 'keycloak' });
       await keycloak.register({ redirectUri });
     } else {
+      sessionStorage.setItem('auth_mode', 'login');
       await keycloak.login({ redirectUri });
     }
     return null;
@@ -96,6 +100,10 @@ export const useAuthStore = create<AuthState>((set) => ({
   signOut: async () => {
     console.log("[authStore] Initiating signOut flow...");
     set({ loading: true }); // Prevent route redirects by entering loading state
+    
+    // Track logout event
+    trackEvent('logout', { user_type: 'regular' });
+
     const { logout } = await import('@/services/keycloak').then(m => ({ logout: () => m.default.logout() }));
     clearAuthToken();
     console.log("[authStore] Auth token cleared.");

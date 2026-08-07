@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { API_BASE_URL } from '@/config/api'
+import { trackEvent } from '@/services/firebase/analytics.service'
 
 interface AdminUser {
   email: string
@@ -36,14 +37,22 @@ export const useAdminStore = create<AdminState>((set) => ({
       if (!res.ok) throw new Error(data.error || 'Admin login failed')
       sessionStorage.setItem(ADMIN_TOKEN_KEY, data.token)
       set({ admin: data.admin, adminToken: data.token, loading: false })
+      
+      // Track admin login
+      trackEvent('login', { method: 'admin' })
     } catch (err) {
       set({ loading: false })
+      trackEvent('login_failed', { reason: err instanceof Error ? err.message : 'Admin login failed' })
       throw err
     }
   },
 
   adminLogout: () => {
     console.log("[adminStore] Initiating adminLogout flow...");
+    
+    // Track admin logout
+    trackEvent('logout', { user_type: 'admin' })
+
     sessionStorage.removeItem(ADMIN_TOKEN_KEY)
     console.log("[adminStore] Admin token removed from sessionStorage.");
     set({ admin: null, adminToken: null })

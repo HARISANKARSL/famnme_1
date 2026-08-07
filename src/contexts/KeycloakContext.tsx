@@ -7,6 +7,7 @@ import {
   clearAuthToken,
 } from "@/lib/auth";
 import { Loader2 } from "lucide-react";
+import { trackEvent } from "@/services/firebase/analytics.service";
 
 interface KeycloakContextType {
   initialized: boolean;
@@ -55,6 +56,16 @@ export const KeycloakProvider: React.FC<{
           // Sync user session
           await checkSession();
 
+          // Track analytics event after successful session check
+          const authMode = sessionStorage.getItem("auth_mode");
+          if (authMode === "register") {
+            trackEvent("sign_up_completed", { method: "keycloak" });
+            sessionStorage.removeItem("auth_mode");
+          } else if (authMode === "login") {
+            trackEvent("login", { method: "keycloak" });
+            sessionStorage.removeItem("auth_mode");
+          }
+
           // Auto token refresh
           refreshTimer = setInterval(async () => {
             try {
@@ -84,9 +95,25 @@ export const KeycloakProvider: React.FC<{
           }, 30000);
         } else {
           setUser(null);
+
+          // Track analytics failure if auth_mode was set
+          const authMode = sessionStorage.getItem("auth_mode");
+          if (authMode) {
+            const params = new URLSearchParams(window.location.search);
+            const errorReason = params.get("error_description") || params.get("error") || "authentication_cancelled";
+            trackEvent("login_failed", { reason: errorReason });
+            sessionStorage.removeItem("auth_mode");
+          }
         }
       } catch (error) {
         console.error("[Keycloak] Initialization failed", error);
+
+        const authMode = sessionStorage.getItem("auth_mode");
+        if (authMode) {
+          const errorMsg = error instanceof Error ? error.message : String(error);
+          trackEvent("login_failed", { reason: errorMsg });
+          sessionStorage.removeItem("auth_mode");
+        }
 
         clearAuthToken();
 
@@ -108,6 +135,7 @@ export const KeycloakProvider: React.FC<{
   }, [checkSession, setUser]);
 
   const login = () => {
+    sessionStorage.setItem("auth_mode", "login");
     keycloak.login();
   };
 
@@ -116,6 +144,10 @@ export const KeycloakProvider: React.FC<{
       console.log("[KeycloakContext] Initiating logout flow...");
       // Enter loading state to prevent client-side routing to /login during logout redirect
       useAuthStore.setState({ loading: true });
+      
+      // Track logout event
+      trackEvent("logout", { user_type: "regular" });
+
       clearAuthToken();
       console.log("[KeycloakContext] Auth token cleared.");
 
