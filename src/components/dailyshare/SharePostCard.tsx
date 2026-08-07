@@ -18,6 +18,7 @@ import * as api from '@/services/dailyShareApiService';
 import type { SharePost, ShareComment } from '@/services/dailyShareApiService';
 import { useToast } from '@/components/ui/use-toast';
 import { useFeedStore } from '@/store/feedStore';
+import { trackEvent } from '@/services/firebase/analytics.service';
 import { resolveBackendUrl } from '@/config/api';
 import { useAnalyticsStore } from '@/store/analyticsStore';
 import { usePostTracking } from '@/hooks/useTracking';
@@ -272,6 +273,10 @@ export function SharePostCard({
   const handleDelete = useCallback(async () => {
     try {
       await api.deletePost(treeId, post.postId);
+      trackEvent("post_deleted", {
+        post_id: post.postId,
+        reason: "user_deleted",
+      });
       onDeleted(post.postId);
     } catch {
       toast({ title: 'Error', description: 'Failed to delete post', variant: 'destructive' });

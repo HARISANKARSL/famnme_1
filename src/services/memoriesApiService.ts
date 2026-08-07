@@ -1,5 +1,6 @@
 import { getApi, postApi, postAIApi, putApi, deleteApi, memoriesApi, treeApi, albumsApi } from './api';
 import type { Memory, MemoryInput } from '@/types';
+import { trackEvent } from './firebase/analytics.service';
 
 export interface CeremonyDetectionResult {
   detected: boolean;
@@ -170,6 +171,10 @@ export async function updateMemory(
 
 export async function deleteMemory(memoryId: string): Promise<void> {
   await postApi(memoriesApi.delete, { id: [memoryId] });
+  trackEvent("post_deleted", {
+    post_id: memoryId,
+    reason: "user_deleted",
+  });
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('memories-changed'));
   }
@@ -226,6 +231,12 @@ export async function deleteMemoryComment(memoryId: string, commentId: string): 
 
 export async function batchDeleteMemories(treeId: string, memoryIds: string[]): Promise<void> {
   await postApi(memoriesApi.delete, { id: memoryIds });
+  for (const id of memoryIds) {
+    trackEvent("post_deleted", {
+      post_id: id,
+      reason: "batch_deleted",
+    });
+  }
   if (typeof window !== 'undefined') {
     window.dispatchEvent(new CustomEvent('memories-changed'));
   }

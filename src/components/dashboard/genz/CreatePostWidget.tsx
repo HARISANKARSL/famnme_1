@@ -282,6 +282,7 @@ export function CreatePostWidget({
       post_id: null,
       media_type: mediaType,
       tagged_ids: [],
+      tagged_names: [],
     });
 
     setSubmitting(true)
@@ -302,6 +303,7 @@ export function CreatePostWidget({
         post_id: memory.memoryId || memory._id || null,
         media_type: mediaType,
         tagged_ids: [],
+        tagged_names: [],
       });
 
       setRecentMemory(memory)
@@ -318,6 +320,7 @@ export function CreatePostWidget({
         post_id: null,
         media_type: mediaType,
         tagged_ids: [],
+        tagged_names: [],
         error: String(err),
       });
       console.error('Failed to create memory:', err)

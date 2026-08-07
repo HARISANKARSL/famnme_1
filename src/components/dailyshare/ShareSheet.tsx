@@ -9,6 +9,7 @@ import { useState, useCallback } from 'react';
 import { X, Link2, Check, Instagram, Linkedin } from 'lucide-react';
 import { getShareUrl } from '@/config/api';
 import type { SharePost } from '@/services/dailyShareApiService';
+import { trackEvent } from '@/services/firebase/analytics.service';
 
 interface ShareSheetProps {
   post: SharePost;
@@ -31,12 +32,14 @@ export function ShareSheet({ post, onClose }: ShareSheetProps) {
     : `Check out this post by ${authorLabel} on FamNme!`;
 
   const handleWhatsApp = useCallback(() => {
+    trackEvent("post_shared", { post_id: post.postId, destination: "WhatsApp" });
     const text = `${shareText}\n\n${shareUrl}`;
     window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, '_blank', 'noopener,noreferrer');
     onClose();
-  }, [shareText, shareUrl, onClose]);
+  }, [post.postId, shareText, shareUrl, onClose]);
 
   const handleTwitter = useCallback(() => {
+    trackEvent("post_shared", { post_id: post.postId, destination: "Twitter" });
     const text = `${shareText}`;
     window.open(
       `https://twitter.com/intent/tweet?text=${encodeURIComponent(text)}&url=${encodeURIComponent(shareUrl)}`,
@@ -44,27 +47,30 @@ export function ShareSheet({ post, onClose }: ShareSheetProps) {
       'noopener,noreferrer',
     );
     onClose();
-  }, [shareText, shareUrl, onClose]);
+  }, [post.postId, shareText, shareUrl, onClose]);
 
   const handleFacebook = useCallback(() => {
+    trackEvent("post_shared", { post_id: post.postId, destination: "Facebook" });
     window.open(
       `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}&quote=${encodeURIComponent(shareText)}`,
       '_blank',
       'noopener,noreferrer',
     );
     onClose();
-  }, [shareText, shareUrl, onClose]);
+  }, [post.postId, shareText, shareUrl, onClose]);
 
   const handleLinkedIn = useCallback(() => {
+    trackEvent("post_shared", { post_id: post.postId, destination: "LinkedIn" });
     window.open(
       `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(shareUrl)}`,
       '_blank',
       'noopener,noreferrer',
     );
     onClose();
-  }, [shareUrl, onClose]);
+  }, [post.postId, shareUrl, onClose]);
 
   const handleInstagram = useCallback(async () => {
+    trackEvent("post_shared", { post_id: post.postId, destination: "Instagram" });
     try {
       await navigator.clipboard.writeText(shareUrl);
       setInstagramFeedback(true);
@@ -76,9 +82,10 @@ export function ShareSheet({ post, onClose }: ShareSheetProps) {
     } catch {
       onClose();
     }
-  }, [shareUrl, onClose]);
+  }, [post.postId, shareUrl, onClose]);
 
   const handleCopyLink = useCallback(async () => {
+    trackEvent("post_shared", { post_id: post.postId, destination: "CopyLink" });
     try {
       await navigator.clipboard.writeText(shareUrl);
       setCopied(true);
@@ -97,7 +104,7 @@ export function ShareSheet({ post, onClose }: ShareSheetProps) {
       setCopied(true);
       setTimeout(() => { setCopied(false); onClose(); }, 1200);
     }
-  }, [shareUrl, onClose]);
+  }, [post.postId, shareUrl, onClose]);
 
   return (
     /* Backdrop */

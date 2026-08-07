@@ -781,10 +781,16 @@ export function CreateMemoryModal({
       }
     }
 
+    const taggedNames = taggedPersonIds.map(id => {
+      const p = persons.find(per => per.personId === id);
+      return p ? `${p.firstName} ${p.lastName}` : 'Unknown';
+    });
+
     trackEvent("create_memory_post_started", {
       post_id: null,
       media_type: mediaType,
       tagged_ids: taggedPersonIds,
+      tagged_names: taggedNames,
     });
 
     try {
@@ -842,6 +848,7 @@ export function CreateMemoryModal({
         post_id: createdId || null,
         media_type: mediaType,
         tagged_ids: taggedPersonIds,
+        tagged_names: taggedNames,
       });
 
       onCreated(albumId);
@@ -852,6 +859,7 @@ export function CreateMemoryModal({
         post_id: null,
         media_type: mediaType,
         tagged_ids: taggedPersonIds,
+        tagged_names: taggedNames,
         error: errMsg,
       });
       setError(errMsg);
@@ -869,11 +877,13 @@ export function CreateMemoryModal({
   // ── Helpers ──────────────────────────────────────────────────────────────
 
   const togglePerson = (id: string) => {
+    const p = persons.find(per => per.personId === id);
+    const name = p ? `${p.firstName} ${p.lastName}` : 'Unknown';
     const isTagged = taggedPersonIds.includes(id);
     if (isTagged) {
-      trackEvent("post_untagged", { person_id: id });
+      trackEvent("post_untagged", { person_id: id, person_name: name });
     } else {
-      trackEvent("post_tagged", { person_id: id });
+      trackEvent("post_tagged", { person_id: id, person_name: name });
     }
     setTaggedPersonIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
   };

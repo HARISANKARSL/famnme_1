@@ -4,6 +4,7 @@
 
 import { useState, useEffect, useRef, useMemo } from 'react';
 import { X, Loader2, Search, Pencil, ChevronDown } from 'lucide-react';
+import { trackEvent } from '@/services/firebase/analytics.service';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -194,6 +195,14 @@ export function EditMemoryModal({
   if (!open) return null;
 
   const togglePerson = (personId: string) => {
+    const p = persons.find(per => per.personId === personId);
+    const name = p ? `${p.firstName} ${p.lastName}` : 'Unknown';
+    const isTagged = taggedPersonIds.includes(personId);
+    if (isTagged) {
+      trackEvent("post_untagged", { person_id: personId, person_name: name });
+    } else {
+      trackEvent("post_tagged", { person_id: personId, person_name: name });
+    }
     setTaggedPersonIds(prev =>
       prev.includes(personId) ? prev.filter(id => id !== personId) : [...prev, personId]
     );
@@ -211,8 +220,31 @@ export function EditMemoryModal({
     setShowConfirmSave(false);
     setSaving(true);
     setError(null);
+    const mid = memory.memoryId || (memory as any)._id;
+
+    let mediaType = "Text";
+    if (memory.memoryType === 'photo') {
+      mediaType = (memory.files && memory.files.length > 1) ? "Multiple Images" : "Image";
+    } else if (memory.memoryType === 'video') {
+      mediaType = "Video";
+    } else if (memory.memoryType === 'audio') {
+      mediaType = "Audio";
+    }
+
+    const taggedNames = taggedPersonIds.map(id => {
+      const p = persons.find(per => per.personId === id);
+      return p ? `${p.firstName} ${p.lastName}` : 'Unknown';
+    });
+
+    trackEvent("edit_post_started", {
+      post_id: mid,
+      post_type: "memory",
+      media_type: mediaType,
+      tagged_ids: taggedPersonIds,
+      tagged_names: taggedNames,
+    });
+
     try {
-      const mid = memory.memoryId || (memory as any)._id;
       const fileId = memory.files?.[0]?._id;
 
       // Update scalar fields
@@ -244,6 +276,14 @@ export function EditMemoryModal({
         }
       }
 
+      trackEvent("edit_post_completed", {
+        post_id: mid,
+        post_type: "memory",
+        media_type: mediaType,
+        tagged_ids: taggedPersonIds,
+        tagged_names: taggedNames,
+      });
+
       toast({
         title: 'Success',
         description: 'Memory updated successfully.',
@@ -252,6 +292,14 @@ export function EditMemoryModal({
       onClose();
     } catch (err: unknown) {
       const errMsg = err instanceof Error ? err.message : 'Failed to update memory';
+      trackEvent("edit_post_failed", {
+        post_id: mid,
+        post_type: "memory",
+        media_type: mediaType,
+        tagged_ids: taggedPersonIds,
+        tagged_names: taggedNames,
+        error: errMsg,
+      });
       setError(errMsg);
       toast({
         title: 'Error Updating Memory',
