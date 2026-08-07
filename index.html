@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <style id="antiClickjack">body{display:none !important;}</style>
+  <script type="text/javascript">
+    if (self === top) {
+      var antiClickjack = document.getElementById("antiClickjack");
+      antiClickjack.parentNode.removeChild(antiClickjack);
+    } else {
+      top.location = self.location;
+    }
+  </script>
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <link rel="apple-touch-icon" href="/logo.png" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta http-equiv="Content-Security-Policy" content="
+default-src 'self';
+script-src 'self' 'unsafe-inline' https://www.google.com https://www.gstatic.com https://dev-auth-internal.familyaconnect.com https://www.youtube.com https://s.ytimg.com https://www.googletagmanager.com https://*.googletagmanager.com https://www.google-analytics.com https://*.google-analytics.com;
+style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com;
+img-src 'self' data: blob:
+http://192.168.29.184:8000
+https://*.digitaloceanspaces.com
+https://fc-familytree.blr1.cdn.digitaloceanspaces.com
+https://fc-familytree.blr1.digitaloceanspaces.com
+https://*.familyaconnect.com
+https://*.tile.openstreetmap.org
+https://unpkg.com
+https://img.youtube.com
+https://i.ytimg.com
+https://*.vimeocdn.com
+https://maps.googleapis.com
+https://maps.gstatic.com
+https://*.googleusercontent.com
+https://www.google-analytics.com
+https://*.google-analytics.com
+https://stats.g.doubleclick.net
+https://famnme.com
+https://*.famnme.com;
+media-src 'self' blob:
+http://192.168.29.184:8000
+https://*.digitaloceanspaces.com
+https://fc-familytree.blr1.cdn.digitaloceanspaces.com
+https://fc-familytree.blr1.digitaloceanspaces.com
+https://famnme.com
+https://*.famnme.com;
+font-src 'self' https://fonts.gstatic.com;
+connect-src 'self'
+http://localhost:8000
+http://192.168.29.184:8000
+https://dev-app.familyaconnect.com
+https://*.digitaloceanspaces.com
+https://*.familyaconnect.com
+https://fc-familytree.blr1.digitaloceanspaces.com
+https://fc-familytree.blr1.cdn.digitaloceanspaces.com
+https://www.google.com
+https://www.google-analytics.com
+https://*.google-analytics.com
+https://*.analytics.google.com
+https://firebase-telemetry.googleapis.com
+https://famnme.actigen.ai wss://famnme.actigen.ai
+https://famnme-test-api.actigen.ai wss://famnme-test-api.actigen.ai
+https://famnme.com wss://famnme.com
+https://*.famnme.com wss://*.famnme.com;
+frame-src 'self' blob:
+http://192.168.29.184:8000
+https://www.youtube.com
+https://www.youtube-nocookie.com
+https://player.vimeo.com
+https://www.google.com
+https://*.familyaconnect.com
+https://dev-app.familyaconnect.com
+https://famnme.com
+https://*.famnme.com;
+object-src 'none';
+base-uri 'self';
+" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <link rel="manifest" href="/manifest.json" />
+
+  <!-- SEO & Description -->
+  <meta name="description"
+    content="Everyone you come from is still here. FamNme is the family archive for the generations still listening — names, faces, voices, kept before the remembering stops." />
+  <meta name="theme-color" content="#2F3E8F" />
+
+  <!-- Open Graph Tags -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="FamNme — Everyone you come from is still here." />
+  <meta property="og:description"
+    content="A family archive for the generations still listening. Record the names, faces and voices of the ones who made you — before the remembering stops." />
+  <meta property="og:image" content="https://fc-familytree.blr1.cdn.digitaloceanspaces.com/brand/og-invite.png" />
+  <!-- <meta property="og:url" content="https://beta.famnme.com/" /> -->
+  <meta property="og:site_name" content="FamNme" />
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary" />
+  <meta name="twitter:title" content="FamNme — Everyone you come from is still here." />
+  <meta name="twitter:description"
+    content="A family archive for the generations still listening. Record the names, faces and voices of the ones who made you — before the remembering stops." />
+  <!-- <meta name="twitter:image" content="https://beta.famnme.com/logo.png" /> -->
+
+  <title>FamNme — Everyone you come from is still here.</title>
+  <script>
+    // Redirect old frontend URL to beta.famnme.com
+    // if (location.hostname !== 'beta.famnme.com' && location.hostname !== 'localhost') {
+    //   var path = location.pathname.replace(/^\/FC-familytree\/?/, '/');
+    //   location.replace('https://beta.famnme.com' + path + location.search + location.hash);
+    // }
+  </script>
+</head>
+
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.tsx"></script>
+</body>
+
+</html>

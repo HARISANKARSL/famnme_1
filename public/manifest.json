@@ -1,0 +1,12 @@
+{
+  "name": "FamNme",
+  "short_name": "FamNme",
+  "description": "Build, explore, and preserve your family tree with Indian cultural support",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FDFAF6",
+  "theme_color": "#C2784A",
+  "icons": [
+    { "src": "/logo.png", "sizes": "any", "type": "image/png" }
+  ]
+}

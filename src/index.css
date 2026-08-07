@@ -1,0 +1,1392 @@
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap');
+@import 'lenis/dist/lenis.css';
+@import "tailwindcss";
+@config "../tailwind.config.js";
+
+@custom-variant dark (.dark &);
+
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+:root {
+  --app-vh: 1vh;
+  /* Heritage layer: light warm ivory base — breathable, not gold-heavy */
+  --background: 43 34% 96%;
+  --foreground: 215 16% 15%;
+  --card: 40 25% 99%;
+  --card-foreground: 215 16% 15%;
+  --popover: 40 25% 99%;
+  --popover-foreground: 215 16% 15%;
+  /* Primary = Deep Indigo #2F3E8F → HSL 231 50% 37% */
+  --primary: 231 50% 37%;
+  --primary-foreground: 0 0% 100%;
+  --secondary: 38 22% 90%;
+  --secondary-foreground: 215 16% 15%;
+  --muted: 38 22% 90%;
+  --muted-foreground: 35 12% 50%;
+  --accent: 38 22% 90%;
+  --accent-foreground: 215 16% 15%;
+  --destructive: 356 82% 40%;
+  --destructive-foreground: 0 0% 100%;
+  --border: 39 26% 85%;
+  --input: 39 26% 85%;
+  --ring: 231 50% 37%;
+  --radius: 0.5rem;
+  /* Heritage palette tokens */
+  --heritage-ivory: #F8F6F1;
+  --heritage-ivory-warm: #F6F2EA;
+  --heritage-separator: #F1ECE3;
+  --heritage-beige: #EFE6D6;
+  --heritage-gold: #C2A46D;
+  --heritage-gold-light: #EFE6D6;
+  --heritage-sand: #E2DBCE;
+  --chart-1: 207 90% 41%;
+  --chart-2: 152 86% 30%;
+  --chart-3: 24 100% 43%;
+  --chart-4: 262 52% 47%;
+  --chart-5: 174 50% 40%;
+
+  /* ==========================================================================
+     Design Tokens — Semantic layer (design-recommendations Part 2.2)
+     Use these for all new work. Keep existing shadcn/heritage tokens for now.
+     ========================================================================== */
+
+  /* Brand */
+  --color-brand-primary:        #2F3E8F;  /* indigo */
+  --color-brand-accent:         #C2A46D;  /* gold */
+  --color-brand-heritage:       #4B2C5E;  /* purple */
+  --color-brand-warm:           #8B5E3C;  /* brown */
+
+  /* Surface */
+  --color-surface-canvas:       #F6F2EA;  /* page bg — ivory */
+  --color-surface-raised:       #FFFFFF;  /* cards */
+  --color-surface-sunken:       #F1ECE3;  /* dividers */
+  --color-surface-overlay:      rgba(0,0,0,.50);
+
+  /* Text */
+  --color-text-primary:         #3D2E1F;  /* warm dark */
+  --color-text-secondary:       #8B7355;
+  --color-text-tertiary:        #B8A090;
+  --color-text-inverse:         #FFFFFF;
+
+  /* State */
+  --color-state-success:        #10B981;
+  --color-state-warning:        #F59E0B;
+  --color-state-error:          #DC2626;
+  --color-state-info:           #2F3E8F;
+
+  /* Gender — reformed, colorblind-safe (Part 2.3) */
+  --color-gender-male:          #5A7DB8;  /* muted slate-indigo */
+  --color-gender-female:        #C29A94;  /* muted terracotta rose */
+  --color-gender-neutral:       #A8A18D;  /* muted sand */
+
+  /* Celebration */
+  --color-confetti-1:           #C2A46D;
+  --color-confetti-2:           #2F3E8F;
+  --color-confetti-3:           #4B2C5E;
+  --color-confetti-4:           #E8B64C;
+
+  /* Elevation */
+  --elevation-0:                none;
+  --elevation-1:                0 1px 2px rgba(0,0,0,.04);
+  --elevation-2:                0 2px 8px rgba(0,0,0,.06);
+  --elevation-3:                0 8px 24px rgba(47,62,143,.10);
+  --elevation-4:                0 20px 60px rgba(47,62,143,.14);
+  --elevation-modal:            0 24px 72px rgba(0,0,0,.24);
+
+  /* Typography families (Part 2.4) */
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --font-mono:    'JetBrains Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+  --font-indic:   'Noto Sans', sans-serif;
+}
+
+body {
+  background-color: hsl(var(--background));
+  color: hsl(var(--foreground));
+}
+
+* {
+  border-color: hsl(var(--border));
+}
+
+/* Dashboard widget animations */
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in {
+  animation: fade-in 0.4s ease-out both;
+}
+.animate-fade-in-up {
+  animation: fade-in-up 0.4s ease-out both;
+}
+
+/* Gen-Z dashboard animations */
+@keyframes streak-pop {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.4); }
+  100% { transform: scale(1); }
+}
+@keyframes story-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.7; }
+}
+@keyframes confetti-pop {
+  0% { transform: scale(0) rotate(0deg); opacity: 1; }
+  50% { transform: scale(1.2) rotate(180deg); opacity: 0.8; }
+  100% { transform: scale(0) rotate(360deg); opacity: 0; }
+}
+@keyframes counter-up {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes pin-drop {
+  0% { transform: translateY(-20px) scale(0); opacity: 0; }
+  60% { transform: translateY(2px) scale(1.1); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.animate-streak-pop {
+  animation: streak-pop 0.4s ease-out;
+}
+.animate-story-pulse {
+  animation: story-pulse 2s ease-in-out infinite;
+}
+.animate-counter-up {
+  animation: counter-up 0.6s ease-out both;
+}
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}
+.animate-float {
+  animation: float 3s ease-in-out infinite;
+}
+.animate-pin-drop {
+  animation: pin-drop 0.5s ease-out both;
+}
+/* Staggered entry animations */
+.animate-stagger-1 { animation: fade-in-up 0.4s ease-out 0ms both; }
+.animate-stagger-2 { animation: fade-in-up 0.4s ease-out 100ms both; }
+.animate-stagger-3 { animation: fade-in-up 0.4s ease-out 200ms both; }
+.animate-stagger-4 { animation: fade-in-up 0.4s ease-out 300ms both; }
+.animate-stagger-5 { animation: fade-in-up 0.4s ease-out 400ms both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-streak-pop,
+  .animate-story-pulse,
+  .animate-counter-up,
+  .animate-pin-drop,
+  .animate-stagger-1,
+  .animate-stagger-2,
+  .animate-stagger-3,
+  .animate-stagger-4,
+  .animate-stagger-5 {
+    animation: none;
+  }
+}
+
+@keyframes pulse-ring {
+  0%   { box-shadow: 0 0 0 0 rgba(47, 62, 143, 0.7); }
+  70%  { box-shadow: 0 0 0 12px rgba(47, 62, 143, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(47, 62, 143, 0); }
+}
+
+.person-card-recently-added {
+  animation: pulse-ring 1s ease-out 3;
+}
+
+/* Vamshavali mode: spring-bounce animation for newly revealed nodes */
+@keyframes vamshavali-node-appear {
+  0%   { opacity: 0; transform: scale(0.85) translateY(8px); }
+  60%  { opacity: 1; transform: scale(1.03) translateY(-2px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+.vamshavali-appear {
+  animation: vamshavali-node-appear 350ms cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+@media (prefers-reduced-motion: reduce) {
+  .vamshavali-appear { animation: none; }
+}
+
+/* Vamshavali canvas: warm parchment-like background */
+/* Migration map photo markers — override Leaflet's default DivIcon styles */
+.migration-photo-marker {
+  background: transparent !important;
+  border: none !important;
+}
+.migration-photo-marker img {
+  display: block;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.migration-cluster-marker {
+  background: transparent !important;
+  border: none !important;
+}
+/* Temple map markers */
+.temple-map-marker {
+  background: transparent !important;
+  border: none !important;
+}
+.temple-map-popup .leaflet-popup-content-wrapper {
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  padding: 0;
+}
+.temple-map-popup .leaflet-popup-content {
+  margin: 12px 14px;
+}
+.temple-map-popup .leaflet-popup-tip {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+@keyframes marker-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(194, 164, 109, 0.4); }
+  50% { box-shadow: 0 0 0 8px rgba(194, 164, 109, 0); }
+}
+.migration-marker-selected {
+  animation: marker-pulse 1.5s ease-in-out infinite;
+  border-radius: 50%;
+}
+/* Migration popup card — override Leaflet popup defaults */
+.migration-person-popup .leaflet-popup-content-wrapper {
+  border-radius: 14px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  padding: 0;
+  overflow: hidden;
+}
+.migration-person-popup .leaflet-popup-content {
+  margin: 12px 14px;
+  line-height: 1.4;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+.migration-person-popup .leaflet-popup-close-button {
+  top: 6px !important;
+  right: 6px !important;
+  width: 22px !important;
+  height: 22px !important;
+  font-size: 16px !important;
+  line-height: 22px !important;
+  text-align: center;
+  color: #8B7355 !important;
+  background: rgba(255,255,255,0.8) !important;
+  border-radius: 50% !important;
+  padding: 0 !important;
+  z-index: 10;
+}
+.migration-person-popup .leaflet-popup-close-button:hover {
+  color: #3D2E1F !important;
+  background: rgba(255,255,255,1) !important;
+}
+.migration-person-popup .leaflet-popup-tip {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+/* Animated migration path — flowing gold line */
+.migration-animated-path {
+  stroke-dasharray: 1000;
+  stroke-dashoffset: 1000;
+  animation: migration-flow 1.8s ease-out forwards;
+}
+.migration-path-delay-0 { animation-delay: 0.2s; }
+.migration-path-delay-1 { animation-delay: 1.2s; }
+.migration-path-delay-2 { animation-delay: 2.2s; }
+@keyframes migration-flow {
+  to { stroke-dashoffset: 0; }
+}
+/* Pulsing dot at migration endpoints */
+.migration-arrow-pulse {
+  animation: migration-dot-pulse 1.5s ease-in-out infinite;
+}
+@keyframes migration-dot-pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(194,164,109,0.5); }
+  50% { transform: scale(1.3); box-shadow: 0 0 0 6px rgba(194,164,109,0); }
+}
+/* Migration sidebar scrollbar */
+.migration-person-list::-webkit-scrollbar { width: 4px; }
+.migration-person-list::-webkit-scrollbar-track { background: transparent; }
+.migration-person-list::-webkit-scrollbar-thumb { background: #E2DBCE; border-radius: 2px; }
+.migration-person-list::-webkit-scrollbar-thumb:hover { background: #C2A46D; }
+/* Migration bottom sheet drag handle */
+.migration-drag-handle {
+  width: 36px; height: 4px; border-radius: 2px; background: #D4D0CC; margin: 8px auto 4px;
+}
+
+/* Premium sleek global scrollbar (shadcn/tailwind design) */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.2); /* Slate-500 with opacity */
+  border-radius: 9999px;
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.4);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2); /* Slate-400 with opacity */
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.4);
+  border: 2px solid transparent;
+  background-clip: padding-box;
+}
+
+/* For Firefox compatibility */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(100, 116, 139, 0.2) transparent;
+}
+
+.dark * {
+  scrollbar-color: rgba(148, 163, 184, 0.2) transparent;
+}
+
+/* Preserve .custom-scrollbar class mapped to the global design */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(100, 116, 139, 0.2);
+  border-radius: 9999px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.4);
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.2);
+}
+.dark .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(148, 163, 184, 0.4);
+}
+
+
+.vamshavali-canvas {
+  background: #FAF8F5 !important;
+  background-image: radial-gradient(circle, #E2DBCE 0.6px, transparent 0.6px) !important;
+  background-size: 24px 24px !important;
+}
+
+.dark .vamshavali-canvas {
+  background: #1B1A19 !important;
+  background-image: radial-gradient(circle, #484644 0.6px, transparent 0.6px) !important;
+}
+
+@keyframes search-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0.8); }
+  40%  { box-shadow: 0 0 0 14px rgba(234, 179, 8, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(234, 179, 8, 0); }
+}
+
+.person-card-search-highlight {
+  animation: search-pulse 0.8s ease-out 3;
+  outline: 2px solid #eab308;
+  outline-offset: 2px;
+}
+
+/* Relationship path highlight */
+@keyframes path-glow {
+  0%, 100% { box-shadow: 0 0 8px 2px rgba(47, 62, 143, 0.6); }
+  50%      { box-shadow: 0 0 16px 4px rgba(47, 62, 143, 0.9); }
+}
+
+.person-card-highlighted {
+  animation: path-glow 1.5s ease-in-out infinite;
+  outline: 3px solid #2F3E8F;
+  outline-offset: 2px;
+  z-index: 5;
+}
+
+/* Home person highlight — subtle persistent blue glow to identify the home person */
+@keyframes home-person-glow {
+  0%, 100% { box-shadow: 0 0 0 2px rgba(29, 111, 184, 0.35), 0 0 8px 2px rgba(29, 111, 184, 0.15); }
+  50%      { box-shadow: 0 0 0 3px rgba(29, 111, 184, 0.55), 0 0 14px 4px rgba(29, 111, 184, 0.25); }
+}
+
+.person-card-home {
+  animation: home-person-glow 3s ease-in-out infinite;
+  border-radius: 14px;
+  z-index: 3;
+}
+
+/* Invited person highlight — gold pulse ring on the public invite landing */
+@keyframes invited-pulse {
+  0%, 100% { box-shadow: 0 0 0 3px rgba(194, 164, 109, 0.6), 0 0 12px 4px rgba(194, 164, 109, 0.35); }
+  50%      { box-shadow: 0 0 0 5px rgba(194, 164, 109, 0.9), 0 0 20px 8px rgba(194, 164, 109, 0.55); }
+}
+
+.person-card-invited-highlight {
+  animation: invited-pulse 2s ease-in-out infinite;
+  outline: 3px solid #C2A46D;
+  outline-offset: 3px;
+  z-index: 6;
+  border-radius: 14px;
+}
+
+/* PersonActionMenu — pill buttons slide out from center */
+@keyframes action-slide-left {
+  from { opacity: 0; transform: translateX(20px) scale(0.8); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+@keyframes action-slide-right {
+  from { opacity: 0; transform: translateX(-20px) scale(0.8); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+.animate-action-slide-left {
+  animation: action-slide-left 0.25s ease-out both;
+}
+.animate-action-slide-right {
+  animation: action-slide-right 0.25s ease-out both;
+  animation-delay: 0.05s;
+}
+
+@keyframes slideInRight {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+
+/* Login page input styles */
+.login-input::placeholder {
+  color: #A89080;
+}
+
+.login-input {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Ensure all elements inside the canvas inherit touch-action: none
+   so that dragging from person cards enables canvas panning on mobile */
+.person-card,
+.person-card * {
+  touch-action: none;
+}
+
+/* Ensure modals and dialogs are scrollable on mobile */
+[data-radix-dialog-overlay] {
+  touch-action: pan-y;
+}
+[data-radix-dialog-content] {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+/* On small screens, constrain dialogs to screen width and use dynamic viewport height */
+@media (max-width: 640px) {
+  [data-radix-dialog-content] {
+    max-height: 90dvh !important;
+    max-width: calc(100vw - 1rem) !important;
+    overflow-x: hidden !important;
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+  }
+  /* Remove extra horizontal padding inside dialog sections on mobile */
+  [data-radix-dialog-content] .px-6,
+  [data-radix-dialog-content] .px-8 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  /* Ensure all content fits within the dialog width */
+  [data-radix-dialog-content] form,
+  [data-radix-dialog-content] > * {
+    max-width: 100%;
+    min-width: 0;
+    overflow-wrap: break-word;
+    box-sizing: border-box;
+  }
+  [data-radix-dialog-content] input,
+  [data-radix-dialog-content] textarea,
+  [data-radix-dialog-content] select,
+  [data-radix-dialog-content] button[role="combobox"] {
+    max-width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+  }
+  /* Prevent grid items from overflowing */
+  [data-radix-dialog-content] .grid > * {
+    min-width: 0;
+  }
+}
+
+/* Safe area insets for notched phones (iPhone X+) */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.safe-area-top {
+  padding-top: env(safe-area-inset-top);
+}
+
+/* Prevent long-press callout on interactive elements (iOS) */
+.no-touch-callout {
+  -webkit-touch-callout: none;
+}
+
+/* Smooth scrolling for modals on iOS */
+.touch-scroll {
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Hide scrollbar but allow scroll */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Safe area inset for notched phones */
+.safe-area-top {
+  padding-top: max(0px, env(safe-area-inset-top));
+}
+
+/* Canvas dot grid background */
+/* Disable transitions during PDF export for sharper captures */
+.export-active, .export-active * {
+  transition: none !important;
+  animation: none !important;
+  transform-style: flat !important;
+}
+
+.canvas-background {
+  background-color: #F4F6F9;
+  background-image: radial-gradient(circle, #D1D5DB 0.8px, transparent 0.8px);
+  background-size: 28px 28px;
+}
+
+.dark .canvas-background {
+  background-color: #1B1A19;
+  background-image: radial-gradient(circle, #484644 0.8px, transparent 0.8px);
+  background-size: 28px 28px;
+}
+
+/* Generation tier labels */
+.generation-tier-label {
+  font-style: italic;
+  font-size: 13px;
+  color: #8B7355;
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Focus visible styles */
+*:focus-visible {
+  outline: 2px solid #2F3E8F;
+  outline-offset: 2px;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Skeleton loader — shimmer palette (4.6) */
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #EEE8DC 0%, #F6F2EA 50%, #EEE8DC 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.4s ease-in-out infinite;
+}
+.dark .skeleton-shimmer {
+  background: linear-gradient(90deg, #1E1E1E 0%, #2A2A2A 50%, #1E1E1E 100%);
+  background-size: 200% 100%;
+}
+
+/* Skip-to-content link (4.7) — visible only when focused */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 12px;
+  z-index: 10000;
+  padding: 8px 16px;
+  background: #2F3E8F;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: top 150ms ease;
+}
+.skip-to-content:focus-visible {
+  top: 12px;
+  outline: 2px solid #C2A46D;
+  outline-offset: 2px;
+}
+
+/* Dark mode CSS variables — true dark, warm gold accents prevent deadness */
+.dark {
+  /* #121212 → HSL 0 0% 7% */
+  --background: 0 0% 7%;
+  --foreground: 38 14% 95%;
+  /* #242424 → HSL 0 0% 14% */
+  --card: 0 0% 14%;
+  --card-foreground: 38 14% 95%;
+  --popover: 0 0% 14%;
+  --popover-foreground: 38 14% 95%;
+  /* Primary in dark: #5A6BFF → HSL 234 100% 67% */
+  --primary: 234 100% 67%;
+  --primary-foreground: 0 0% 100%;
+  /* #1E1E1E → HSL 0 0% 12% */
+  --secondary: 0 0% 12%;
+  --secondary-foreground: 38 14% 95%;
+  --muted: 0 0% 12%;
+  --muted-foreground: 38 10% 70%;
+  --accent: 0 0% 12%;
+  --accent-foreground: 38 14% 95%;
+  --destructive: 356 82% 40%;
+  --destructive-foreground: 0 0% 100%;
+  /* border: ~#2A2A2A */
+  --border: 0 0% 16%;
+  --input: 0 0% 16%;
+  --ring: 234 100% 67%;
+
+  /* Semantic tokens — dark overrides */
+  --color-surface-canvas:       #121212;
+  --color-surface-raised:       #1A1A1A;
+  --color-surface-sunken:       #0A0A0A;
+  --color-surface-overlay:      rgba(0,0,0,.60);
+  --color-text-primary:         #F3F2F1;
+  --color-text-secondary:       #999999;
+  --color-text-tertiary:        #666666;
+  --color-brand-primary:        #7B8FD4;  /* lifted for dark contrast */
+}
+
+/* ============================================================================
+   Dark Mode Theme
+   ============================================================================ */
+
+.dark body {
+  background-color: #121212;
+  color: #F5F1E8;
+}
+
+/* Dark mode for common patterns */
+.dark .bg-white { background-color: #242424 !important; }
+.dark .border-gray-200 { border-color: #2A2A2A !important; }
+.dark .text-gray-900 { color: #F5F1E8 !important; }
+.dark .text-gray-800 { color: #F5F1E8 !important; }
+.dark .text-gray-700 { color: #C8C4BC !important; }
+.dark .text-gray-600 { color: #9B9790 !important; }
+.dark .text-gray-500 { color: #9B9790 !important; }
+.dark .bg-gray-50 { background-color: #1E1E1E !important; }
+.dark .bg-gray-100 { background-color: #1E1E1E !important; }
+.dark .hover\:bg-gray-100:hover { background-color: #1E1E1E !important; }
+.dark .hover\:bg-gray-50:hover { background-color: #1E1E1E !important; }
+
+/* Sidebar dark mode */
+.dark .w-16.bg-white { background-color: #1E1E1E !important; }
+.dark .w-56.bg-white { background-color: #1E1E1E !important; }
+
+/* Input dark mode */
+.dark input, .dark textarea, .dark select {
+  background-color: #1E1E1E !important;
+  color: #F5F1E8 !important;
+  border-color: #2A2A2A !important;
+}
+
+.dark input.border-red-500, .dark textarea.border-red-500 {
+  border-color: #ef4444 !important;
+}
+
+/* Modal/Dialog dark mode */
+.dark [role="dialog"] {
+  background-color: #242424 !important;
+  color: #F5F1E8 !important;
+}
+
+/* Card dark mode (PersonCard uses inline bg-gradient, so we use a broader selector) */
+.dark .person-card .text-slate-800,
+.dark .person-card .text-amber-950 {
+  color: #F3F2F1 !important;
+}
+
+/* Context menu dark mode */
+.dark .bg-white\/95 {
+  background-color: rgba(36, 36, 36, 0.95) !important;
+}
+
+/* Fluent shadow utilities */
+.fluent-shadow-4 {
+  box-shadow: 0 2px 4px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.12);
+}
+.fluent-shadow-8 {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.12);
+}
+.fluent-shadow-16 {
+  box-shadow: 0 8px 16px rgba(0,0,0,0.14), 0 0 2px rgba(0,0,0,0.12);
+}
+
+/* ============================================================================
+   iOS-Native Mobile Design System
+   ============================================================================ */
+
+/* --- iOS Translucent Bars --- */
+.ios-bar-translucent {
+  background: rgba(246, 242, 234, 0.72);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+}
+.dark .ios-bar-translucent {
+  background: rgba(18, 18, 18, 0.72);
+}
+
+/* --- iOS Tab Bar --- */
+.ios-tab-bar {
+  background: rgba(246, 242, 234, 0.82);
+  backdrop-filter: saturate(180%) blur(20px);
+  -webkit-backdrop-filter: saturate(180%) blur(20px);
+  border-top: 0.5px solid rgba(60, 60, 67, 0.18);
+}
+.dark .ios-tab-bar {
+  background: rgba(30, 30, 30, 0.82);
+  border-top-color: rgba(255, 255, 255, 0.08);
+}
+
+/* --- iOS Grouped Inset Cards --- */
+.ios-card {
+  background: #ffffff;
+  border-radius: 14px;
+  overflow: hidden;
+}
+.dark .ios-card {
+  background: #1c1c1e;
+}
+
+/* iOS grouped section with inset margins (like Settings app) */
+.ios-grouped-section {
+  margin-left: 16px;
+  margin-right: 16px;
+}
+
+/* iOS separator (hairline) */
+.ios-separator {
+  height: 0.5px;
+  background: rgba(60, 60, 67, 0.18);
+  margin-left: 16px;
+}
+.dark .ios-separator {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+/* iOS list row */
+.ios-list-row {
+  display: flex;
+  align-items: center;
+  padding: 11px 16px;
+  min-height: 44px;
+  gap: 12px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  transition: background-color 0.1s ease;
+}
+.ios-list-row:active {
+  background-color: rgba(60, 60, 67, 0.08);
+}
+.dark .ios-list-row:active {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* --- iOS Touch Feedback --- */
+.ios-pressable {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+  transition: transform 80ms cubic-bezier(0.25, 0.46, 0.45, 0.94), opacity 80ms ease;
+}
+.ios-pressable:active {
+  transform: scale(0.97);
+  opacity: 0.7;
+}
+
+/* --- iOS Spring Animations --- */
+@keyframes ios-spring-in {
+  0% { opacity: 0; transform: scale(0.92) translateY(8px); }
+  60% { opacity: 1; transform: scale(1.02) translateY(-1px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes ios-slide-up {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes ios-tab-bounce {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.85); }
+  100% { transform: scale(1); }
+}
+.animate-ios-spring {
+  animation: ios-spring-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.animate-ios-slide-up {
+  animation: ios-slide-up 0.35s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Staggered iOS spring entry */
+.ios-stagger-1 { animation: ios-spring-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0ms both; }
+.ios-stagger-2 { animation: ios-spring-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 60ms both; }
+.ios-stagger-3 { animation: ios-spring-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 120ms both; }
+.ios-stagger-4 { animation: ios-spring-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 180ms both; }
+.ios-stagger-5 { animation: ios-spring-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 240ms both; }
+.ios-stagger-6 { animation: ios-spring-in 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 300ms both; }
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-ios-spring,
+  .animate-ios-slide-up,
+  .ios-stagger-1, .ios-stagger-2, .ios-stagger-3,
+  .ios-stagger-4, .ios-stagger-5, .ios-stagger-6 {
+    animation: none;
+  }
+  .ios-pressable:active {
+    transform: none;
+  }
+}
+
+/* --- iOS Large Title Header --- */
+.ios-large-title {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  line-height: 1.12;
+}
+.ios-section-header {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+  color: #8B7355;
+  padding: 6px 16px 6px;
+}
+.dark .ios-section-header {
+  color: #8d8d93;
+}
+
+/* --- iOS Pull-to-Refresh Spinner --- */
+@keyframes ios-spinner {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.ios-refresh-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(60, 60, 67, 0.18);
+  border-top-color: #8B7355;
+  border-radius: 50%;
+  animation: ios-spinner 0.8s linear infinite;
+}
+.dark .ios-refresh-spinner {
+  border-color: rgba(255, 255, 255, 0.1);
+  border-top-color: #a0a0a0;
+}
+
+/* --- Platform Chat Assistant Animations --- */
+@keyframes chat-fab-in {
+  from { transform: scale(0) rotate(-180deg); opacity: 0; }
+  to { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+@keyframes chat-window-in {
+  from { transform: translateY(16px) scale(0.95); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+@keyframes chat-bounce {
+  0%, 60%, 100% { transform: translateY(0); }
+  30% { transform: translateY(-4px); }
+}
+@keyframes slide-in-left {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(0); }
+}
+
+/* --- iOS Widget Card (for dashboard widgets on mobile) --- */
+@media (max-width: 767px) {
+  .ios-widget {
+    background: #ffffff;
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 0 0 0.5px rgba(0, 0, 0, 0.03);
+  }
+  .dark .ios-widget {
+    background: #1c1c1e;
+    box-shadow: none;
+  }
+}
+
+/* --- iOS Quick Action Grid (dashboard shortcuts) --- */
+.ios-quick-actions {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0;
+}
+.ios-quick-action {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 14px 4px;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.ios-quick-action:active {
+  background-color: rgba(60, 60, 67, 0.06);
+}
+.dark .ios-quick-action:active {
+  background-color: rgba(255, 255, 255, 0.06);
+}
+
+/* --- iOS Overscroll Behavior --- */
+@media (max-width: 767px) {
+  .ios-scroll-container {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-y: contain;
+    scroll-behavior: smooth;
+  }
+}
+
+/* ============================================================================
+   Print Styles
+   ============================================================================ */
+
+@media print {
+  /* Hide UI chrome */
+  .w-16.bg-white,
+  .hidden.md\:block,
+  .fixed.bottom-0,
+  [class*="TopBar"],
+  [class*="Sidebar"],
+  [class*="BottomNav"],
+  .tree-controls,
+  button,
+  .z-50 {
+    display: none !important;
+  }
+
+  /* Full-width canvas */
+  body {
+    background: white !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .person-card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Override dark mode for print */
+  .dark body {
+    background: white !important;
+    color: black !important;
+  }
+}
+
+.printing-tree * {
+  transition: none !important;
+  animation: none !important;
+}
+
+/* ============================================================================
+   Login / Create Account — fit-any-viewport layout.
+
+   The card is rendered inside a 100dvh column. Every internal spacing and
+   font size is `clamp()`'d against viewport height so the form shrinks
+   proportionally on short screens (small phones, half-window browsers,
+   landscape laptops) and never spills past the fold. No scrolling.
+   ============================================================================ */
+.login-shell {
+  height: 100dvh;
+  height: 100vh;            /* fallback for browsers without dvh */
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+/* Desktop / laptop — restore the two-column layout (image left, form right).
+   Tailwind's `lg:grid lg:grid-cols-2` would have done this on its own, but
+   the .login-shell above sets `display: flex`, which has higher specificity
+   in source order than the responsive utility, so we re-assert it here. */
+@media (min-width: 1024px) {
+  .login-shell {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* Right column container — centers the card vertically without overflow.
+   In grid mode it fills its cell (100dvh tall); in flex-column mode it
+   takes the remaining height after siblings. */
+.login-pane {
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: clamp(0.5rem, 1.5vh, 1.25rem) clamp(0.75rem, 4vw, 1.25rem);
+  position: relative;
+}
+
+/* The card itself — clamps its own padding and respects the viewport. */
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  max-height: 100%;
+  padding: clamp(1rem, 2.6vh, 2rem) clamp(1rem, 3.2vw, 1.75rem);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.5rem, 1.4vh, 1rem);
+  overflow: hidden;
+}
+
+/* Logo above the card */
+.login-logo-wrap { margin-bottom: clamp(0.5rem, 1.6vh, 1.5rem); }
+.login-logo      { height: clamp(1.5rem, 3.6vh, 2.5rem); }
+
+/* Hero title block inside the card */
+.login-hero      { margin-bottom: clamp(0.5rem, 1.6vh, 1.5rem); text-align: center; }
+.login-hero h1   { font-size: clamp(18px, 3.2vh, 26px); line-height: 1.2; font-weight: 700; }
+.login-hero p    { font-size: clamp(11px, 1.6vh, 13px); margin-top: 0.35rem; }
+
+/* Tab switcher */
+.login-tabs {
+  margin-bottom: clamp(0.6rem, 1.8vh, 1.5rem);
+  padding: 0.25rem;
+}
+.login-tabs button {
+  padding: clamp(0.4rem, 1.1vh, 0.625rem) 0;
+  font-size: clamp(12px, 1.6vh, 14px);
+}
+
+/* Generic form vertical rhythm — replaces space-y-5 inside the card */
+.login-form { display: flex; flex-direction: column; gap: clamp(0.45rem, 1.4vh, 1rem); }
+
+/* Field labels + inputs */
+.login-form label.login-label { font-size: clamp(11px, 1.5vh, 13px); margin-bottom: 0.3rem; }
+.login-form .login-input,
+.login-form input.login-input {
+  padding-top:    clamp(0.45rem, 1.3vh, 0.875rem);
+  padding-bottom: clamp(0.45rem, 1.3vh, 0.875rem);
+  font-size: clamp(13px, 1.7vh, 15px);
+}
+
+/* Primary submit button */
+.login-form .login-submit {
+  padding-top:    clamp(0.55rem, 1.5vh, 0.875rem);
+  padding-bottom: clamp(0.55rem, 1.5vh, 0.875rem);
+  font-size: clamp(13px, 1.8vh, 15px);
+}
+
+/* Secondary OAuth / passkey buttons */
+.login-form .login-oauth {
+  padding-top:    clamp(0.4rem, 1.2vh, 0.75rem);
+  padding-bottom: clamp(0.4rem, 1.2vh, 0.75rem);
+  font-size: clamp(12px, 1.6vh, 14px);
+}
+
+/* Tighten "or" divider on short screens */
+.login-form .login-divider { margin: clamp(0.15rem, 0.6vh, 0.5rem) 0; }
+.login-form .login-divider span { font-size: clamp(10px, 1.3vh, 11px); }
+
+/* Trust indicators / footer copy */
+.login-form .login-fineprint { font-size: clamp(10px, 1.3vh, 11px); }
+
+/* Eye toggle button — keep tappable but scale on short screens */
+.login-form .login-eye {
+  width:  clamp(2.25rem, 4.5vh, 2.5rem);
+  height: clamp(2.25rem, 4.5vh, 2.5rem);
+}
+
+/* On true mini viewports (<560px tall) drop the hero subtitle to save space */
+@media (max-height: 560px) {
+  .login-hero p { display: none; }
+  .login-tabs   { margin-bottom: 0.5rem; }
+  .login-logo-wrap { margin-bottom: 0.4rem; }
+}
+
+/* On ultra-short landscape phones, hide the trust line as last-resort */
+@media (max-height: 480px) {
+  .login-form .login-fineprint { display: none; }
+}
+
+/* ============================================================================
+   .shell-overlay — for full-screen pages/panels mounted inside the dashboard
+   that should leave room for the persistent left sidebar on desktop.
+   The Sidebar component publishes `--app-sidebar-width` on :root.
+   ============================================================================ */
+.shell-overlay {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+}
+@media (min-width: 768px) {
+  .shell-overlay {
+    left: var(--app-sidebar-width, 0px);
+  }
+}
+
+/* ============================================================================
+   6.5 — Custom flame / sparkle animations per streak milestone
+   ============================================================================ */
+@keyframes streak-sparkle-kf {
+  0%,100% { transform: scale(1) rotate(0deg); opacity: 1 }
+  50%     { transform: scale(1.18) rotate(8deg); opacity: 0.85 }
+}
+.streak-anim-sparkle { animation: streak-sparkle-kf 2.4s ease-in-out infinite }
+
+@keyframes streak-spark-kf {
+  0%,100% { transform: translateY(0) scale(1) }
+  50%     { transform: translateY(-1.5px) scale(1.12) }
+}
+.streak-anim-spark { animation: streak-spark-kf 1.6s ease-in-out infinite }
+
+@keyframes streak-flicker-kf {
+  0%,100% { transform: scale(1) rotate(-2deg); filter: brightness(1) }
+  25%     { transform: scale(1.10) rotate(2deg); filter: brightness(1.15) }
+  50%     { transform: scale(1.05) rotate(-1deg); filter: brightness(1.05) }
+  75%     { transform: scale(1.13) rotate(3deg); filter: brightness(1.18) }
+}
+.streak-anim-flicker { animation: streak-flicker-kf 1.2s ease-in-out infinite; transform-origin: center bottom }
+
+@keyframes streak-glow-kf {
+  0%,100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(194,164,109,0)) }
+  50%     { transform: scale(1.08); filter: drop-shadow(0 0 6px rgba(194,164,109,0.7)) }
+}
+.streak-anim-glow { animation: streak-glow-kf 1.8s ease-in-out infinite }
+
+@keyframes streak-burn-kf {
+  0%,100% { transform: scale(1) translateY(0); filter: drop-shadow(0 0 4px rgba(255,140,0,0.55)) }
+  20%     { transform: scale(1.20) translateY(-2px); filter: drop-shadow(0 0 8px rgba(255,140,0,0.8)) }
+  40%     { transform: scale(1.08) translateY(-1px); filter: drop-shadow(0 0 6px rgba(255,140,0,0.7)) }
+  60%     { transform: scale(1.22) translateY(-2.5px); filter: drop-shadow(0 0 10px rgba(255,140,0,0.85)) }
+  80%     { transform: scale(1.12) translateY(-1px); filter: drop-shadow(0 0 7px rgba(255,140,0,0.7)) }
+}
+.streak-anim-burn { animation: streak-burn-kf 0.9s ease-in-out infinite; transform-origin: center bottom }
+
+@keyframes streak-golden-kf {
+  0%,100% { transform: scale(1); filter: drop-shadow(0 0 0 rgba(255,215,0,0)) hue-rotate(0deg) }
+  50%     { transform: scale(1.15); filter: drop-shadow(0 0 12px rgba(255,215,0,0.85)) hue-rotate(15deg) }
+}
+.streak-anim-golden { animation: streak-golden-kf 1.5s ease-in-out infinite }
+
+@keyframes streak-legend-kf {
+  0%,100% { transform: scale(1) rotate(0deg); filter: drop-shadow(0 0 0 rgba(168,213,255,0)) }
+  25%     { transform: scale(1.15) rotate(5deg);  filter: drop-shadow(0 0 10px rgba(168,213,255,0.9)) }
+  50%     { transform: scale(1.20) rotate(0deg);  filter: drop-shadow(0 0 14px rgba(255,255,255,1)) }
+  75%     { transform: scale(1.15) rotate(-5deg); filter: drop-shadow(0 0 10px rgba(255,215,0,0.9)) }
+}
+.streak-anim-legend { animation: streak-legend-kf 2s ease-in-out infinite }
+
+@media (prefers-reduced-motion: reduce) {
+  .streak-anim-sparkle,
+  .streak-anim-spark,
+  .streak-anim-flicker,
+  .streak-anim-glow,
+  .streak-anim-burn,
+  .streak-anim-golden,
+  .streak-anim-legend { animation: none !important }
+}
+
+
+/* ─── Help Center article prose ─────────────────────────────────────────────
+   Styling for markdown rendered via react-markdown on help article pages.
+   Scoped to .prose-help to avoid leaking into other pages. */
+.prose-help {
+  color: #1f2937;
+  font-size: 16px;
+  line-height: 1.7;
+}
+.dark .prose-help { color: #e5e7eb }
+.prose-help h2 {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #111827;
+  margin-top: 2.25rem;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+  scroll-margin-top: 80px;
+}
+.dark .prose-help h2 { color: #ffffff }
+.prose-help h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #111827;
+  margin-top: 1.75rem;
+  margin-bottom: 0.5rem;
+  scroll-margin-top: 80px;
+}
+.dark .prose-help h3 { color: #ffffff }
+.prose-help p { margin: 0 0 1rem 0 }
+.prose-help a { color: #2F3E8F; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px }
+.dark .prose-help a { color: #a8b5ff }
+.prose-help a:hover { color: #283579 }
+.dark .prose-help a:hover { color: #c7d0ff }
+.prose-help strong { font-weight: 600; color: #111827 }
+.dark .prose-help strong { color: #ffffff }
+.prose-help ul, .prose-help ol { margin: 0 0 1rem 0; padding-left: 1.5rem }
+.prose-help ul { list-style: disc }
+.prose-help ol { list-style: decimal }
+.prose-help li { margin-bottom: 0.35rem }
+.prose-help li > p { margin-bottom: 0.35rem }
+.prose-help code {
+  background: #F6F2EA;
+  color: #111827;
+  padding: 0.1em 0.35em;
+  border-radius: 4px;
+  font-size: 0.92em;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.dark .prose-help code { background: #27272a; color: #ffffff }
+.prose-help pre {
+  background: #111827;
+  color: #f9fafb;
+  padding: 1rem;
+  border-radius: 10px;
+  overflow-x: auto;
+  margin: 1rem 0;
+}
+.prose-help pre code { background: transparent; color: inherit; padding: 0 }
+.prose-help blockquote {
+  border-left: 3px solid #C2A46D;
+  padding-left: 1rem;
+  color: #4b5563;
+  margin: 1rem 0;
+}
+.dark .prose-help blockquote { color: #9ca3af }
+.prose-help table { width: 100%; border-collapse: collapse; margin: 1rem 0; font-size: 0.95em }
+.prose-help th, .prose-help td {
+  border: 1px solid #e5e7eb;
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+.dark .prose-help th, .dark .prose-help td { border-color: #3f3f46 }
+.prose-help th { background: #F6F2EA; font-weight: 600 }
+.dark .prose-help th { background: #27272a }
+.prose-help hr { border: 0; border-top: 1px solid #e5e7eb; margin: 2rem 0 }
+.dark .prose-help hr { border-color: #3f3f46 }
+
+/* ============================================================== */
+/* BBH-style public landing page helpers (PublicLandingPage.tsx)   */
+/* ============================================================== */
+
+/* Outlined Playfair headline used on the dark purple band.
+   Static by design — motion cheapens it. */
+.bbh-ghost {
+  -webkit-text-stroke: 1.5px #F6F2EA;
+  color: transparent;
+  letter-spacing: -0.025em;
+  line-height: 0.95;
+}
+@media (min-width: 1024px) {
+  .bbh-ghost { -webkit-text-stroke-width: 2px; }
+}
+
+/* Editorial photo filter: desaturated, warmth shift.
+   Apply via class (matches the BBH anti-stock, anti-smiling-sofa brief). */
+.bbh-photo {
+  filter: saturate(0.78) sepia(0.08) contrast(1.02);
+}
+
+/* Scroll-triggered reveal. Starts hidden; IntersectionObserver
+   sets data-revealed="true" on enter, which runs fade-up once. */
+.bbh-reveal {
+  opacity: 0;
+  transform: translateY(16px);
+  transition: opacity 700ms cubic-bezier(0.16, 1, 0.3, 1),
+              transform 700ms cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.bbh-reveal[data-revealed="true"] {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Per-word H1 entrance. Words wrap in <span class="bbh-word">
+   with inline --word-index custom property for stagger. */
+.bbh-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(0.22em);
+  animation: bbh-word-in 700ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation-delay: calc(var(--word-index, 0) * 90ms + 120ms);
+}
+@keyframes bbh-word-in {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Subtle gold underline that draws in under a link/button on hover. */
+.bbh-underline {
+  position: relative;
+}
+.bbh-underline::after {
+  content: "";
+  position: absolute;
+  left: 0; bottom: -2px;
+  height: 1px;
+  width: 100%;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 320ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.bbh-underline:hover::after,
+.bbh-underline:focus-visible::after { transform: scaleX(1); }
+
+/* ============================================================== */
+/* Global Interactive Elements Cursor Reset                        */
+/* ============================================================== */
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+  cursor: pointer !important;
+}
+
+button:disabled,
+[role="button"]:disabled,
+input[type="button"]:disabled,
+input[type="submit"]:disabled {
+  cursor: not-allowed !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bbh-reveal { opacity: 1; transform: none; transition: none; }
+  .bbh-word { opacity: 1; transform: none; animation: none; }
+  .bbh-underline::after { transition: none; }
+}
+
+/* Invert calendar picker indicator in dark mode for better readability */
+.dark input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(1) !important;
+}

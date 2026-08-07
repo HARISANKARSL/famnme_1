@@ -1,0 +1,14 @@
+<svg width="140" height="140" viewBox="0 0 140 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background circle with pink theme -->
+  <circle cx="70" cy="70" r="70" fill="#FCE7F3"/>
+
+  <!-- User icon centered -->
+  <g transform="translate(46, 46)">
+    <!-- Head circle -->
+    <circle cx="24" cy="18" r="12" fill="#EC4899" stroke="#DB2777" stroke-width="2"/>
+
+    <!-- Body/shoulders -->
+    <path d="M 8 42 Q 8 32 16 30 L 16 30 Q 24 28 24 28 Q 24 28 32 30 L 32 30 Q 40 32 40 42 L 40 48 L 8 48 Z"
+          fill="#EC4899" stroke="#DB2777" stroke-width="2"/>
+  </g>
+</svg>
