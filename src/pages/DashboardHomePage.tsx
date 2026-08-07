@@ -38,6 +38,7 @@ import {
 } from '@/components/dashboard/genz'
 import { resolveBackendUrl } from '@/config/api'
 import dummyFeed from '@/data/dummyFeed.json'
+import { trackEvent } from '@/services/firebase/analytics.service'
 
 interface PeopleFilter {
   isLiving?: boolean
@@ -285,7 +286,7 @@ export function DashboardHomePage({
   const memberCount = persons.filter(p => !p.isDeleted && !(p as any).isProxy && !(p.personId && p.personId.includes('_proxy_'))).length
 
   // ── Daily Share feed loading (page-based) ──
-  const loadFeed = useCallback(async (page: number = 1, silent: boolean = false) => {
+  const loadFeed = useCallback(async (page: number = 1, silent: boolean = false): Promise<boolean> => {
     try {
       if (page > 1) {
         setFeedLoadingMore(true)
@@ -307,6 +308,7 @@ export function DashboardHomePage({
         setFeedHasMore(feed.hasMore)
         setFeedPage(feed.page)
         setFeedIsOffline(false)
+        return true
       } catch (apiErr) {
         console.warn('Failed to fetch real feed, using dummy data:', apiErr)
         // Fallback to dummy data (first page only)
@@ -316,9 +318,11 @@ export function DashboardHomePage({
           setFeedIsOffline(true)
           setInitialViewedCount(useAnalyticsStore.getState().viewedPosts.length)
         }
+        return false
       }
     } catch {
       setFeedError('Failed to load feed')
+      return false
     } finally {
       setFeedLoading(false)
       setFeedLoadingMore(false)
@@ -338,6 +342,11 @@ export function DashboardHomePage({
       console.log('🚪 [Analytics Store] Page/Route Exit Detected from DashboardHomePage. Flushing remaining events.');
       useAnalyticsStore.getState().flushQueue(true);
     };
+  }, []);
+
+  // Track when feed is opened
+  useEffect(() => {
+    trackEvent("feed_opened");
   }, []);
 
   // ── Scroll event listener to track position for refresh button ──
@@ -371,13 +380,21 @@ export function DashboardHomePage({
       // Reset viewed posts since refresh counter
       setInitialViewedCount(useAnalyticsStore.getState().viewedPosts.length)
       // Reload feed
-      await loadFeed(1)
+      const success = await loadFeed(1)
+      
+      if (success) {
+        trackEvent("feed_refresh_success");
+      } else {
+        trackEvent("feed_refresh_failed", { reason: "feed_load_failed" });
+      }
+
       // Scroll smoothly to top
       if (feedScrollEl) {
         feedScrollEl.scrollTo({ top: 0, behavior: 'smooth' })
       }
     } catch (err) {
       console.error('Failed to refresh feed:', err)
+      trackEvent("feed_refresh_failed", { reason: "api_call_failed", error: String(err) });
     } finally {
       setFeedLoading(false)
     }
@@ -387,7 +404,14 @@ export function DashboardHomePage({
   const { isTouchDevice } = useResponsive()
   const { pullDistance, isRefreshing } = usePullToRefresh({
     containerRef: feedScrollRef,
-    onRefresh: async () => { await loadFeed() },
+    onRefresh: async () => { 
+      const success = await loadFeed() 
+      if (success) {
+        trackEvent("feed_refresh_success");
+      } else {
+        trackEvent("feed_refresh_failed", { reason: "pull_to_refresh_failed" });
+      }
+    },
     enabled: isTouchDevice,
   })
 
