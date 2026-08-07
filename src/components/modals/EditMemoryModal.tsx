@@ -199,9 +199,9 @@ export function EditMemoryModal({
     const name = p ? `${p.firstName} ${p.lastName}` : 'Unknown';
     const isTagged = taggedPersonIds.includes(personId);
     if (isTagged) {
-      trackEvent("post_untagged", { person_id: personId, person_name: name });
+      trackEvent("post_untagged", { tagged_id: personId, tagged_name: name });
     } else {
-      trackEvent("post_tagged", { person_id: personId, person_name: name });
+      trackEvent("post_tagged", { tagged_id: personId, tagged_name: name });
     }
     setTaggedPersonIds(prev =>
       prev.includes(personId) ? prev.filter(id => id !== personId) : [...prev, personId]
