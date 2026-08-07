@@ -22,6 +22,7 @@ import type { Memory, Story, StorySlide } from '@/types'
 import { LinkPreviewCard } from '@/components/dailyshare/LinkPreviewCard'
 import { YouTubePreviewCard } from '@/components/dailyshare/YouTubePreviewCard'
 import { useToast } from '@/components/ui/use-toast'
+import { trackEvent } from '@/services/firebase/analytics.service'
 
 type Mode = 'memory' | 'post' | 'story' | null
 
@@ -321,14 +322,24 @@ export function CreatePostWidget({
       return
     }
 
+    const videoInfo = hasLink ? getVideoInfo(trimmedLink) : null
+
+    const postType = mediaFiles.length > 0
+      ? (mediaFiles[0].type.startsWith('video/') ? 'video' : 'image')
+      : videoInfo ? 'video' : (hasLink ? 'link' : 'text')
+
+    const mediaType = mediaFiles.length > 0
+      ? (mediaFiles[0].type.startsWith('video/') ? "Video" : "Image")
+      : videoInfo ? "Video" : (hasLink ? "Link" : "None");
+
+    trackEvent("create_post_started", {
+      post_id: null,
+      post_type: postType,
+      media_type: mediaType,
+    });
+
     setSubmitting(true)
     try {
-      const videoInfo = hasLink ? getVideoInfo(trimmedLink) : null
-
-      const postType = mediaFiles.length > 0
-        ? (mediaFiles[0].type.startsWith('video/') ? 'video' : 'image')
-        : videoInfo ? 'video' : (hasLink ? 'link' : 'text')
-
       // Pull author_id from the auth store (same pattern as service)
       const { useAuthStore } = await import('@/store/authStore')
       const authorId = useAuthStore.getState().user?.id ?? ''
@@ -357,6 +368,12 @@ export function CreatePostWidget({
         personName: sessionFullName || undefined,
       })
 
+      trackEvent("create_post_completed", {
+        post_id: post.postId,
+        post_type: post.postType,
+        media_type: mediaType,
+      });
+
       setRecentPost({ postId: post.postId, content: post.content, mediaUrls: post.mediaUrls })
       onPostCreated?.()
 
@@ -367,6 +384,12 @@ export function CreatePostWidget({
         closeMode()
       }, 2000)
     } catch (err: any) {
+      trackEvent("create_post_failed", {
+        post_id: null,
+        post_type: postType,
+        media_type: mediaType,
+        error: String(err),
+      });
       console.error('Failed to create post:', err)
       toast({
         title: "Post Creation Failed",

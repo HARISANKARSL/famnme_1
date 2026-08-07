@@ -163,8 +163,9 @@ export function DashboardHomePage({
   const [initialViewedCount, setInitialViewedCount] = useState(() => useAnalyticsStore.getState().viewedPosts.length)
   const totalViewedCount = useAnalyticsStore(state => state.viewedPosts.length)
   const viewedSinceRefresh = Math.max(0, totalViewedCount - initialViewedCount)
-  const [scrollTop, setScrollTop] = useState(0)
   const [showRefreshButton, setShowRefreshButton] = useState(false)
+  const [scrollTop, setScrollTop] = useState(0)
+  const trackedScrollMilestones = useRef<Set<number>>(new Set())
 
   // ── Smooth scroll (Lenis) ──
   const lenisRef = useLenisDashboard({ wrapper: feedScrollEl })
@@ -299,6 +300,16 @@ export function DashboardHomePage({
 
       try {
         const feed = await shareApi.fetchGlobalFeed(page, treeId)
+        
+        if (page === 1) {
+          trackEvent("feed_opened");
+          trackedScrollMilestones.current.clear();
+        }
+
+        if (feed.posts.length === 0) {
+          trackEvent("feed_empty");
+        }
+
         if (page > 1) {
           setFeedPosts(prev => [...prev, ...feed.posts])
         } else {
@@ -310,6 +321,9 @@ export function DashboardHomePage({
         setFeedIsOffline(false)
         return true
       } catch (apiErr) {
+        trackEvent("api_failed", {
+          api_name: "get_feed"
+        });
         console.warn('Failed to fetch real feed, using dummy data:', apiErr)
         // Fallback to dummy data (first page only)
         if (page === 1) {
@@ -344,16 +358,28 @@ export function DashboardHomePage({
     };
   }, []);
 
-  // Track when feed is opened
-  useEffect(() => {
-    trackEvent("feed_opened");
-  }, []);
 
-  // ── Scroll event listener to track position for refresh button ──
+
   useEffect(() => {
     if (!feedScrollEl) return
     const handleScroll = () => {
-      setScrollTop(feedScrollEl.scrollTop)
+      const scrollTop = feedScrollEl.scrollTop;
+      setScrollTop(scrollTop);
+
+      const scrollHeight = feedScrollEl.scrollHeight;
+      const clientHeight = feedScrollEl.clientHeight;
+      const totalScrollable = scrollHeight - clientHeight;
+      if (totalScrollable > 0) {
+        const pct = Math.round((scrollTop / totalScrollable) * 100);
+        // Milestones: 25%, 50%, 75%, 100%
+        const milestones = [25, 50, 75, 100];
+        for (const milestone of milestones) {
+          if (pct >= milestone && !trackedScrollMilestones.current.has(milestone)) {
+            trackedScrollMilestones.current.add(milestone);
+            trackEvent("feed_scroll", { scroll_depth: milestone });
+          }
+        }
+      }
     }
     feedScrollEl.addEventListener('scroll', handleScroll, { passive: true })
     return () => {
@@ -383,7 +409,7 @@ export function DashboardHomePage({
       const success = await loadFeed(1)
       
       if (success) {
-        trackEvent("feed_refresh_success");
+        trackEvent("feed_refreshed");
       } else {
         trackEvent("feed_refresh_failed", { reason: "feed_load_failed" });
       }
@@ -407,7 +433,7 @@ export function DashboardHomePage({
     onRefresh: async () => { 
       const success = await loadFeed() 
       if (success) {
-        trackEvent("feed_refresh_success");
+        trackEvent("feed_refreshed");
       } else {
         trackEvent("feed_refresh_failed", { reason: "pull_to_refresh_failed" });
       }

@@ -4,6 +4,7 @@
 
 import { API_BASE_URL } from '@/config/api';
 import aiInstance from '@/services/api/aiInstance';
+import { trackEvent } from '@/services/firebase/analytics.service';
 
 function getAuthToken(): string | null {
   return localStorage.getItem('auth_token');
@@ -314,9 +315,15 @@ if (typeof window !== 'undefined') {
 
 // treeId-free interactions (for global feed — no tree ownership required)
 
-export async function recordView(postId: string): Promise<void> {
+export async function recordView(post: SharePost): Promise<void> {
   try {
-    await apiFetch(`${API_BASE_URL}/share/posts/${postId}/view`, { method: 'POST' });
+    trackEvent("post_viewed", {
+      post_id: post.postId,
+      post_type: post.postType,
+      author_id: post.authorId,
+      family_id: post.treeId,
+    });
+    await apiFetch(`${API_BASE_URL}/share/posts/${post.postId}/view`, { method: 'POST' });
   } catch {
     // fire-and-forget — never throw
   }

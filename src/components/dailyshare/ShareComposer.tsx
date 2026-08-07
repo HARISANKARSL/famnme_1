@@ -9,6 +9,7 @@ import { LinkPreviewCard } from './LinkPreviewCard';
 import * as api from '@/services/dailyShareApiService';
 import type { LinkPreview } from '@/services/dailyShareApiService';
 import { useToast } from '@/components/ui/use-toast';
+import { trackEvent } from '@/services/firebase/analytics.service';
 
 function getInitials(name: string): string {
   return name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2) || '?';
@@ -179,10 +180,19 @@ export function ShareComposer({ treeId, authorName, authorAvatarUrl, onPostCreat
   const handleSubmit = async () => {
     if (!hasContent || loading) return;
     setLoading(true);
+    const postType = getPostType();
+    const mediaType = videoFile ? "Video" : mediaFiles.length > 0 ? "Image" : "None";
+
+    trackEvent("create_post_started", {
+      post_id: null,
+      post_type: postType,
+      media_type: mediaType,
+    });
+
     try {
-      await api.createPost(treeId, {
+      const response = await api.createPost(treeId, {
         content: content.trim(),
-        postType: getPostType(),
+        postType,
         authorName,
         authorAvatarUrl,
         linkUrl: linkUrl || undefined,
@@ -192,6 +202,12 @@ export function ShareComposer({ treeId, authorName, authorAvatarUrl, onPostCreat
         mediaFiles: videoFile ? [videoFile] : mediaFiles.length > 0 ? mediaFiles : undefined,
         visibility,
         contentLanguage: contentLanguage !== 'auto' ? contentLanguage : undefined,
+      });
+
+      trackEvent("create_post_completed", {
+        post_id: response.postId,
+        post_type: response.postType,
+        media_type: mediaType,
       });
 
       // Reset
@@ -205,7 +221,13 @@ export function ShareComposer({ treeId, authorName, authorAvatarUrl, onPostCreat
       setShowLinkInput(false);
 
       onPostCreated();
-    } catch {
+    } catch (err) {
+      trackEvent("create_post_failed", {
+        post_id: null,
+        post_type: postType,
+        media_type: mediaType,
+        error: String(err),
+      });
       toast({ title: 'Error', description: 'Failed to create post', variant: 'destructive' });
     } finally {
       setLoading(false);
@@ -396,8 +418,10 @@ export function ShareComposer({ treeId, authorName, authorAvatarUrl, onPostCreat
               </button>
             </div>
           </div>
-        {/* ═══ Professional Modern Uploading/Submitting Overlay ═══ */}
-        {loading && (
+        </div> {/* closes flex-1 */}
+      </div> {/* closes flex gap-3 */}
+      {/* ═══ Professional Modern Uploading/Submitting Overlay ═══ */}
+      {loading && (
           <div className="absolute inset-0 bg-white/90 dark:bg-[#1E1E1E]/95 backdrop-blur-[4px] z-30 flex flex-col justify-between p-5 animate-in fade-in duration-300 rounded-xl">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-[#E2E8F0]/60 dark:border-[#2a2a2a] pb-3">
@@ -484,6 +508,5 @@ export function ShareComposer({ treeId, authorName, authorAvatarUrl, onPostCreat
           </div>
         )}
       </div>
-    </div>
-  );
-}
+    );
+  }

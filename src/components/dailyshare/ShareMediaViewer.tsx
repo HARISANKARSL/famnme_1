@@ -132,7 +132,7 @@ export function ShareMediaViewer({
 
   // Record view on open (fire-and-forget)
   useEffect(() => {
-    api.recordView(post.postId);
+    api.recordView(post);
     setViewCount(v => v + 1);
   }, [post.postId]);
 

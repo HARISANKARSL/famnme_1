@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react';
 import { useAnalyticsStore } from '@/store/analyticsStore';
 import * as api from '@/services/dailyShareApiService';
+import type { SharePost } from '@/services/dailyShareApiService';
 
-export function usePostTracking(postId: string, isVideo: boolean) {
+export function usePostTracking(post: SharePost, isVideo: boolean) {
+  const postId = post.postId;
   const cardRef = useRef<HTMLDivElement>(null);
   const viewTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -33,6 +35,7 @@ export function usePostTracking(postId: string, isVideo: boolean) {
                 duration: 2000,
                 postType: isVideo ? 'video' : 'image',
               });
+              api.recordView(post);
               viewTimerRef.current = null;
             }, 2000);
           }

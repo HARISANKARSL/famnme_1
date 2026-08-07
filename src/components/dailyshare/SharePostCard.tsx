@@ -145,7 +145,7 @@ export function SharePostCard({
     }).filter(Boolean);
   }, [post.mediaUrls]);
   const isVideo = post.postType === 'video' || !!getVideoInfo(post.linkUrl || '');
-  const cardRef = usePostTracking(post.postId, isVideo);
+  const cardRef = usePostTracking(post, isVideo);
   const isOwnPost = post.authorId === currentUserId;
 
   const handleLike = useCallback(async () => {
