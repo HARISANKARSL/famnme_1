@@ -73,7 +73,8 @@ const IGNORED_API_PATTERNS = [
   '/share/post-of-day',
   '/pending-edit-count',
   '/temple-links',
-  '/suggestions'
+  '/suggestions',
+  '/share/posts'
 ];
 
 export const shouldSkipTracking = (url: string | undefined): boolean => {
