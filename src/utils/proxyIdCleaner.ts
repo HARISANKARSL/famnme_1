@@ -71,16 +71,13 @@ const IGNORED_API_PATTERNS = [
   '/share/preferences',
   '/api/streak/activity',
   '/share/post-of-day',
-  '/pending-edit-count',
-  '/temple-links',
-  '/suggestions',
-  '/share/posts'
+  '/api/tree/:id/pending-edit-count',
+  '/api/tree/:id/temple-links',
+  '/api/tree/:id/suggestions',
+  '/tree/:id/suggestions',
+  '/share/posts/:id/view',
+  '/api/tree/:id/temple-memory-counts'
 ];
-
-export const shouldSkipTracking = (url: string | undefined): boolean => {
-  if (!url) return false;
-  return IGNORED_API_PATTERNS.some((pattern) => url.includes(pattern));
-};
 
 export const normalizeUrl = (url: string | undefined): string => {
   if (!url) return "unknown_api";
@@ -106,6 +103,12 @@ export const normalizeUrl = (url: string | undefined): string => {
   path = path.replace(/_proxy_[a-zA-Z0-9_-]+/g, '');
 
   return path;
+};
+
+export const shouldSkipTracking = (url: string | undefined): boolean => {
+  if (!url) return false;
+  const normalized = normalizeUrl(url);
+  return IGNORED_API_PATTERNS.some((pattern) => normalized === pattern || normalized.endsWith(pattern));
 };
 
 export const setupGlobalFetchInterceptor = () => {
