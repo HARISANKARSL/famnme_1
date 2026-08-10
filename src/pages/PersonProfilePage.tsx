@@ -12,6 +12,7 @@ import { treeApiCalls, aiApiCalls } from '@/api/apicalls';
 import { useToast } from '@/components/ui/use-toast';
 
 import { useAnalyticsStore } from '@/store/analyticsStore';
+import { trackEvent } from '@/services/firebase/analytics.service';
 
 interface PersonProfilePageProps {
   personId: string;
@@ -53,17 +54,25 @@ export default function PersonProfilePage({
   const [activeTab, setActiveTab] = useState<ProfileTabId>('facts');
   const { toast } = useToast();
 
-  // Track profile views in Zustand
+  const person = useMemo(() => persons.find(p => p.personId === personId), [persons, personId]);
+
+  // Track profile views in GA4 and Zustand
   useEffect(() => {
     if (personId) {
+      const isOwn = Boolean(person?.isHomePerson);
+      const profileType = isOwn ? 'own' : 'other';
+
+      trackEvent('profile_viewed', {
+        profile_type: profileType,
+        type: profileType,
+      });
+
       useAnalyticsStore.getState().addEvent({
         type: 'profile_view',
         targetUserId: personId,
       });
     }
-  }, [personId]);
-
-  const person = useMemo(() => persons.find(p => p.personId === personId), [persons, personId]);
+  }, [personId, person?.isHomePerson]);
 
   const [localPerson, setLocalPerson] = useState<Person | null>(null);
   const [isBioLoading, setIsBioLoading] = useState(false);

@@ -226,12 +226,14 @@ function SessionTimeoutGuard() {
 }
 
 import { ThemeProvider } from '@/contexts/ThemeContext'
-import { trackEvent } from './services/firebase/analytics.service';
+import { trackEvent, trackUserRetention } from './services/firebase/analytics.service';
 
 function App() {
+  const user = useAuthStore(s => s.user);
 
   useEffect(() => {
     trackEvent("app_open");
+    trackUserRetention(user?.id);
 
     const handleWindowError = (event: ErrorEvent) => {
       if (!event.error) return;
@@ -256,6 +258,12 @@ function App() {
       window.removeEventListener("unhandledrejection", handleUnhandledRejection);
     };
   }, []);
+
+  useEffect(() => {
+    if (user?.id) {
+      trackUserRetention(user.id);
+    }
+  }, [user?.id]);
 
   return (
     <ErrorBoundary>

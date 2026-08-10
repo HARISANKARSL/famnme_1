@@ -44,6 +44,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
+import { trackEvent } from '@/services/firebase/analytics.service'
 
 const API_BASE = resolveBackendUrl('/api')
 import type { TreeMetadata } from '@/types'
@@ -65,6 +66,10 @@ export function SettingsPage() {
   const [activeTab, setActiveTab] = useState<TabId>(initialTab)
   const user = useAuthStore(s => s.user)
   const { isMobile } = useResponsive()
+
+  useEffect(() => {
+    trackEvent('settings_opened')
+  }, [])
 
   useEffect(() => {
     setParams(prev => {

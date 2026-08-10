@@ -93,3 +93,100 @@ export const attachAnalyticsInterceptor = (instance: AxiosInstance) => {
 export const trackPaymentError = (reason: string) => {
   trackEvent("payment_error", { reason });
 };
+
+interface RetentionData {
+  firstSeenDate: string;
+  lastActiveDate: string;
+  lastCheckedDate: string;
+  trackedMilestones?: {
+    day1?: boolean;
+    day7?: boolean;
+    day30?: boolean;
+  };
+}
+
+export const trackUserRetention = (userId?: string) => {
+  if (typeof window === "undefined" || !window.localStorage) return;
+
+  const key = userId ? `fc_retention_${userId}` : "fc_retention_global";
+  const today = new Date().toISOString().slice(0, 10);
+
+  let data: RetentionData | null = null;
+  try {
+    const raw = localStorage.getItem(key);
+    if (raw) {
+      data = JSON.parse(raw);
+    }
+  } catch (e) {
+    console.warn("[Analytics] Failed to parse retention data:", e);
+  }
+
+  const getDaysDifference = (fromDateStr: string, toDateStr: string): number => {
+    const from = new Date(fromDateStr);
+    const to = new Date(toDateStr);
+    const utcFrom = Date.UTC(from.getFullYear(), from.getMonth(), from.getDate());
+    const utcTo = Date.UTC(to.getFullYear(), to.getMonth(), to.getDate());
+    return Math.floor((utcTo - utcFrom) / (1000 * 60 * 60 * 24));
+  };
+
+  if (!data || !data.firstSeenDate) {
+    const initialData: RetentionData = {
+      firstSeenDate: today,
+      lastActiveDate: today,
+      lastCheckedDate: today,
+      trackedMilestones: {},
+    };
+    try {
+      localStorage.setItem(key, JSON.stringify(initialData));
+    } catch (e) {
+      /* ignore */
+    }
+    return;
+  }
+
+  // Already evaluated today
+  if (data.lastCheckedDate === today) {
+    return;
+  }
+
+  const daysSinceFirst = getDaysDifference(data.firstSeenDate, today);
+  const daysSinceLast = getDaysDifference(data.lastActiveDate, today);
+
+  // 1. Returning user event
+  if (daysSinceLast >= 1) {
+    trackEvent("returning_user", { days_since_last: daysSinceLast });
+  }
+
+  const trackedMilestones = data.trackedMilestones || {};
+
+  // 2. Day 1 active event
+  if (daysSinceFirst === 1 && !trackedMilestones.day1) {
+    trackEvent("day1_active");
+    trackedMilestones.day1 = true;
+  }
+
+  // 3. Day 7 active event
+  if (daysSinceFirst === 7 && !trackedMilestones.day7) {
+    trackEvent("day7_active");
+    trackedMilestones.day7 = true;
+  }
+
+  // 4. Day 30 active event
+  if (daysSinceFirst === 30 && !trackedMilestones.day30) {
+    trackEvent("day30_active");
+    trackedMilestones.day30 = true;
+  }
+
+  const updatedData: RetentionData = {
+    firstSeenDate: data.firstSeenDate,
+    lastActiveDate: today,
+    lastCheckedDate: today,
+    trackedMilestones,
+  };
+
+  try {
+    localStorage.setItem(key, JSON.stringify(updatedData));
+  } catch (e) {
+    /* ignore */
+  }
+};

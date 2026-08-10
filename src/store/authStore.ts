@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { getAuthToken, setAuthToken, clearAuthToken, getCachedUser, setCachedUser, isTokenExpired } from '@/lib/auth'
 import { API_BASE_URL } from '@/config/api'
 import { userApi } from '@/api/endpoints'
-import { trackEvent } from '@/services/firebase/analytics.service'
+import { trackEvent, trackUserRetention } from '@/services/firebase/analytics.service'
 
 export interface AppUser {
   id: string
@@ -158,6 +158,9 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       setCachedUser(userData as unknown as Record<string, unknown>)
       set({ user: userData, token, loading: false })
+
+      // Track retention metrics for the authenticated user
+      trackUserRetention(userData.id);
 
       // Background-fetch preferences to set in sessionStorage (e.g. after silent login or token refresh)
       const cached = sessionStorage.getItem('preferredLanguages')

@@ -22,6 +22,7 @@ import {
 import { Loader2 } from 'lucide-react';
 import { API_BASE_URL } from '@/config/api';
 import { getAuthToken } from '@/lib/auth';
+import { trackEvent } from '@/services/firebase/analytics.service';
 
 export interface TreeSettingsModalProps {
   open: boolean;
@@ -51,6 +52,11 @@ export function TreeSettingsModal({
   const [privacyLoading, setPrivacyLoading] = useState(false);
   const [privacySaved, setPrivacySaved] = useState(false);
 
+  useEffect(() => {
+    if (open) {
+      trackEvent('settings_opened');
+    }
+  }, [open]);
 
   useEffect(() => {
     if (currentConfig && open) {
