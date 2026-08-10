@@ -71,6 +71,9 @@ class ErrorBoundary extends Component<{ children: ReactNode }, ErrorBoundaryStat
   componentDidCatch(error: Error, info: { componentStack: string }) {
     console.error('Render error caught by ErrorBoundary:', error, info)
 
+    // Log screen_error analytics event
+    trackEvent("screen_error", { screen: window.location.pathname });
+
     // Auto-reload ONLY for stale chunk / dynamic import failures
     const msg = error.message || '';
     const isStaleChunkError =
@@ -229,6 +232,29 @@ function App() {
 
   useEffect(() => {
     trackEvent("app_open");
+
+    const handleWindowError = (event: ErrorEvent) => {
+      if (!event.error) return;
+      trackEvent("app_crash", {
+        screen: window.location.pathname,
+        message: event.message || event.error.message || "Unknown error"
+      });
+    };
+
+    const handleUnhandledRejection = (event: PromiseRejectionEvent) => {
+      trackEvent("app_crash", {
+        screen: window.location.pathname,
+        reason: String(event.reason || "Unhandled Promise Rejection")
+      });
+    };
+
+    window.addEventListener("error", handleWindowError);
+    window.addEventListener("unhandledrejection", handleUnhandledRejection);
+
+    return () => {
+      window.removeEventListener("error", handleWindowError);
+      window.removeEventListener("unhandledrejection", handleUnhandledRejection);
+    };
   }, []);
 
   return (

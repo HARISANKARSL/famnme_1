@@ -1,6 +1,7 @@
 import axios from 'axios';
 import { getAuthToken } from '@/lib/auth';
 import { attachProxyInterceptor } from '@/utils/proxyIdCleaner';
+import { attachAnalyticsInterceptor } from '@/services/firebase/analytics.service';
 
 // Use the AI API URL from environment variables, defaulting to https://famnme.actigen.ai
 const baseURL = import.meta.env.VITE_AI_API_BASE_URL;
@@ -23,5 +24,8 @@ aiInstance.interceptors.request.use((config) => {
 
 // Attach proxy cleaner interceptor
 attachProxyInterceptor(aiInstance);
+
+// Attach analytics interceptor
+attachAnalyticsInterceptor(aiInstance);
 
 export default aiInstance;

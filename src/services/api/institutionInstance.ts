@@ -1,6 +1,7 @@
 import axios from "axios";
 import { getAuthToken } from "@/lib/auth";
 import { attachProxyInterceptor } from "@/utils/proxyIdCleaner";
+import { attachAnalyticsInterceptor } from "@/services/firebase/analytics.service";
 
 // Main API base URL
 const baseURL = import.meta.env.VITE_API_BASE_URL;
@@ -41,5 +42,9 @@ attachAuthInterceptor(aiInstitutionInstance);
 
 attachProxyInterceptor(institutionInstance);
 attachProxyInterceptor(aiInstitutionInstance);
+
+// Attach analytics interceptor
+attachAnalyticsInterceptor(institutionInstance);
+attachAnalyticsInterceptor(aiInstitutionInstance);
 
 export default institutionInstance;

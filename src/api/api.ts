@@ -2,6 +2,7 @@ import axios from 'axios';
 import { getAuthToken } from '@/lib/auth';
 import { AI_BASE_URL } from '@/config/api';
 import { attachProxyInterceptor } from '@/utils/proxyIdCleaner';
+import { attachAnalyticsInterceptor } from '@/services/firebase/analytics.service';
 
 // const BASE_URL = process.env.VITE_API_BASE_URL;
 const BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -56,6 +57,10 @@ export const aiInstance = axios.create({
 // Attach proxy cleaner interceptor
 attachProxyInterceptor(apiInstance);
 attachProxyInterceptor(aiInstance);
+
+// Attach analytics interceptor
+attachAnalyticsInterceptor(apiInstance);
+attachAnalyticsInterceptor(aiInstance);
 
 // Add interceptor for authentication to AI instance if needed (sharing same token)
 aiInstance.interceptors.request.use(

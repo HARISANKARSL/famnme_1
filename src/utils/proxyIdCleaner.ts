@@ -66,9 +66,99 @@ export const attachProxyInterceptor = (instance: any) => {
   });
 };
 
+const IGNORED_API_PATTERNS = [
+  '/api/streak',
+  '/share/preferences',
+  '/api/streak/activity',
+  '/share/post-of-day',
+  '/pending-edit-count',
+  '/temple-links',
+  '/suggestions'
+];
+
+export const shouldSkipTracking = (url: string | undefined): boolean => {
+  if (!url) return false;
+  return IGNORED_API_PATTERNS.some((pattern) => url.includes(pattern));
+};
+
+export const normalizeUrl = (url: string | undefined): string => {
+  if (!url) return "unknown_api";
+  
+  let path = url;
+  try {
+    if (url.startsWith('http://') || url.startsWith('https://')) {
+      path = new URL(url).pathname;
+    } else {
+      path = url.split('?')[0];
+    }
+  } catch {
+    path = url.split('?')[0];
+  }
+
+  // Replace UUIDs with :id placeholder
+  path = path.replace(/[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}/g, ':id');
+  
+  // Replace standalone numbers (ids) with :id placeholder
+  path = path.replace(/\/\d+(?=\/|$)/g, '/:id');
+  
+  // Clean any proxy suffix if present (e.g. _proxy_1)
+  path = path.replace(/_proxy_[a-zA-Z0-9_-]+/g, '');
+
+  return path;
+};
+
 export const setupGlobalFetchInterceptor = () => {
   const originalFetch = window.fetch;
   window.fetch = function (input: RequestInfo | URL, init?: RequestInit) {
+    let requestUrl = "";
+    if (input instanceof Request) {
+      requestUrl = input.url;
+    } else {
+      requestUrl = typeof input === 'string' ? input : (input as URL).href || "";
+    }
+
+    const handleFetchResponse = (response: Response) => {
+      if (shouldSkipTracking(requestUrl)) {
+        return response;
+      }
+      if (!response.ok) {
+        const status = response.status;
+        if (status !== 401 && status !== 403 && status !== 404) {
+          const apiName = normalizeUrl(requestUrl);
+          import('@/services/firebase/analytics.service')
+            .then(({ trackEvent }) => {
+              trackEvent('api_failed', { api_name: apiName });
+            })
+            .catch(() => {});
+        }
+      }
+      return response;
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const handleFetchError = (error: any) => {
+      if (shouldSkipTracking(requestUrl)) {
+        throw error;
+      }
+      const apiName = normalizeUrl(requestUrl);
+      const isTimeout =
+        error?.name === 'AbortError' ||
+        error?.message?.toLowerCase().includes('timeout') ||
+        error?.code === 'ETIMEDOUT';
+
+      import('@/services/firebase/analytics.service')
+        .then(({ trackEvent }) => {
+          if (isTimeout) {
+            trackEvent('api_timeout', { api_name: apiName });
+          } else {
+            trackEvent('api_failed', { api_name: apiName });
+          }
+        })
+        .catch(() => {});
+
+      throw error;
+    };
+
     if (input instanceof Request) {
       const newUrl = cleanProxyFromUrl(input.url) || input.url;
       let newInit: any = {
@@ -86,14 +176,12 @@ export const setupGlobalFetchInterceptor = () => {
         newInit = { ...newInit, ...init };
       }
 
-      // Note: Getting body from a Request object is async (e.g. input.text()),
-      // so if body is already set in init, clean it.
       if (newInit.body) {
         if (typeof newInit.body === 'string') {
           try {
             const parsed = JSON.parse(newInit.body);
             newInit.body = JSON.stringify(cleanProxyData(parsed));
-          } catch (e) {
+          } catch {
             if (newInit.body.includes('_proxy_')) {
               newInit.body = newInit.body.replace(/_proxy_[a-zA-Z0-9_-]+/g, '');
             }
@@ -104,7 +192,9 @@ export const setupGlobalFetchInterceptor = () => {
       }
 
       const newRequest = new Request(newUrl, newInit);
-      return originalFetch(newRequest);
+      return originalFetch(newRequest)
+        .then(handleFetchResponse)
+        .catch(handleFetchError);
     }
 
     let url = typeof input === 'string' ? input : input.href;
@@ -117,7 +207,7 @@ export const setupGlobalFetchInterceptor = () => {
         try {
           const parsed = JSON.parse(init.body);
           newInit.body = JSON.stringify(cleanProxyData(parsed));
-        } catch (e) {
+        } catch {
           if (init.body.includes('_proxy_')) {
             newInit.body = init.body.replace(/_proxy_[a-zA-Z0-9_-]+/g, '');
           }
@@ -127,6 +217,8 @@ export const setupGlobalFetchInterceptor = () => {
       }
     }
 
-    return originalFetch(url, newInit);
+    return originalFetch(url, newInit)
+      .then(handleFetchResponse)
+      .catch(handleFetchError);
   };
 };
