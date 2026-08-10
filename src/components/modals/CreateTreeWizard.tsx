@@ -18,6 +18,7 @@ import { TreeCreationCelebration } from '@/components/onboarding/TreeCreationCel
 import { aiApiCalls } from '@/api/apicalls';
 import { validateTextField, validateDescriptionField, VALIDATION_LIMITS } from '@/utils/validation';
 import { useFormValidation } from '@/hooks/useFormValidation';
+import { trackEvent } from '@/services/firebase/analytics.service';
 
 interface CreateTreeWizardProps {
   open: boolean;
@@ -650,6 +651,9 @@ export function CreateTreeWizard({ open, onClose, onComplete, userId, initialTre
         await neo4jAPI.quickAddRelatives(createdTreeId, createdHomePersonId, relatives);
       }
 
+      const totalFamilySize = 1 + relatives.length;
+      trackEvent('family_created', { family_size: totalFamilySize });
+
       setFamilyMembersAdded(relatives.length);
       clearDraft();
       setStep('success');
@@ -659,6 +663,7 @@ export function CreateTreeWizard({ open, onClose, onComplete, userId, initialTre
         description: error instanceof Error ? error.message : 'Some family members may not have been added.',
         variant: 'destructive',
       });
+      trackEvent('family_created', { family_size: 1 });
       // Still go to success — partial creation is fine
       setFamilyMembersAdded(0);
       clearDraft();

@@ -18,6 +18,7 @@ import * as neo4jAPI from '@/services/neo4jDataService'
 import { TreeCreationCelebration } from '@/components/onboarding/TreeCreationCelebration'
 import { validateTextField, VALIDATION_LIMITS } from '@/utils/validation'
 import { useFormValidation } from '@/hooks/useFormValidation'
+import { trackEvent } from '@/services/firebase/analytics.service'
 
 // ---------------------------------------------------------------------------
 // Types
@@ -799,11 +800,13 @@ export function ConversationalWizard({ open, onClose, onComplete, userId }: Conv
         }
       })
 
-      // 4. Submit all relatives in one batch
       if (relatives.length > 0) {
         setCreatingMessage('Adding your family members...')
         await neo4jAPI.quickAddRelatives(treeId, homeId, relatives)
       }
+
+      const totalFamilySize = 1 + relatives.length
+      trackEvent('family_created', { family_size: totalFamilySize })
 
       setCreatedTreeId(treeId)
       setCreatingMessage('')

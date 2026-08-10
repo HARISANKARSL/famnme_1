@@ -7,6 +7,7 @@
 import { API_BASE_URL, AI_BASE_URL } from '@/config/api';
 import { treeApiCalls } from '@/api/apicalls';
 import { getAuthToken } from '@/lib/auth';
+import { trackEvent } from '@/services/firebase/analytics.service';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -283,6 +284,10 @@ export async function materializeTree(
 
   try {
     const data = await treeApiCalls.aiOnboarding(payload);
+    trackEvent('family_created', { family_size: entities.length });
+    relationships.forEach(r => {
+      trackEvent('relationship_added', { relation_type: r.type || 'relative' });
+    });
     return data as MaterializeResponse;
   } catch (error: any) {
     throw new Error(error.response?.data?.error || error.message || 'Materialize failed');

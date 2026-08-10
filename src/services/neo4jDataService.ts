@@ -12,6 +12,7 @@ import type { Relationship } from '@/services/elkLayoutService';
 import { getAuthToken } from '@/lib/auth';
 import { API_BASE_URL, AI_BASE_URL } from '@/config/api';
 import { treeApiCalls, aiApiCalls } from '@/api/apicalls';
+import { trackEvent } from '@/services/firebase/analytics.service';
 
 
 
@@ -290,6 +291,7 @@ export async function updatePerson(
   } else {
     clearAllTreeCaches();
   }
+  trackEvent('relationship_updated', { relation_type: 'person' });
   return data;
 }
 
@@ -432,6 +434,7 @@ export async function addSpouse(
 ): Promise<any> {
   const data = await treeApiCalls.addSpouse(personId, spouseData, unionData);
   invalidateTreeCache(treeId);
+  trackEvent('relationship_added', { relation_type: 'spouse' });
   return data;
 }
 
@@ -448,6 +451,8 @@ export async function addChildToUnion(
 ): Promise<Person> {
   const data = await treeApiCalls.addChild(unionId, treeId, childData, parentChildType, parentId);
   invalidateTreeCache(treeId);
+  const relType = childData.gender === 'male' ? 'son' : childData.gender === 'female' ? 'daughter' : 'child';
+  trackEvent('relationship_added', { relation_type: relType });
   return data;
 }
 
@@ -470,6 +475,8 @@ export async function addParent(
   } else {
     clearAllTreeCaches();
   }
+  const relType = parentData.gender === 'male' ? 'father' : parentData.gender === 'female' ? 'mother' : 'parent';
+  trackEvent('relationship_added', { relation_type: relType });
   return data;
 }
 
@@ -508,6 +515,7 @@ export async function reassignParents(
   } else {
     clearAllTreeCaches();
   }
+  trackEvent('relationship_updated', { relation_type: 'parent' });
 }
 
 /**
@@ -525,6 +533,8 @@ export async function addSibling(
 ): Promise<Person> {
   const data = await treeApiCalls.addSibling(referencePersonId, siblingData, parentChildType);
   invalidateTreeCache(treeId);
+  const relType = siblingData.gender === 'female' ? 'sister' : siblingData.gender === 'male' ? 'brother' : 'sibling';
+  trackEvent('relationship_added', { relation_type: relType });
   return data;
 }
 
@@ -538,6 +548,11 @@ export async function quickAddRelatives(
 ): Promise<any> {
   const data = await treeApiCalls.quickCreate(personId, relatives);
   invalidateTreeCache(treeId);
+  if (Array.isArray(relatives)) {
+    relatives.forEach(rel => {
+      trackEvent('relationship_added', { relation_type: rel.type || rel.relationship || 'relative' });
+    });
+  }
   return data;
 }
 
@@ -574,6 +589,7 @@ export async function addGuardian(
   }
 
   invalidateTreeCache(treeId);
+  trackEvent('relationship_added', { relation_type: guardian?.guardianType || 'guardian' });
 }
 
 /**
@@ -667,6 +683,7 @@ export async function updateUnion(
   } else {
     clearAllTreeCaches();
   }
+  trackEvent('relationship_updated', { relation_type: updates.type || 'marriage' });
   return response.json();
 }
 
@@ -688,7 +705,7 @@ export async function moveChildrenToUnion(
   } else {
     clearAllTreeCaches();
   }
-  
+  trackEvent('relationship_updated', { relation_type: 'child' });
   return data;
 }
 
@@ -1063,6 +1080,8 @@ export async function importGedcom(
 
   const result = await treeApiCalls.importGedcom(formData);
   clearAllTreeCaches();
+  const personCount = result?.data?.personCount || result?.personCount || 1;
+  trackEvent('family_created', { family_size: personCount });
   return result;
 }
 
