@@ -105,8 +105,43 @@ export const normalizeUrl = (url: string | undefined): string => {
   return path;
 };
 
-export const shouldSkipTracking = (url: string | undefined): boolean => {
+export const isBackendApi = (url: string | undefined): boolean => {
   if (!url) return false;
+  
+  // Exclude Firebase, Google Analytics, Google Maps, and external telemetry/ad-blocked services
+  if (
+    url.includes('firebase') ||
+    url.includes('googleapis') ||
+    url.includes('google-analytics') ||
+    url.includes('analytics.google') ||
+    url.includes('/g/collect')
+  ) {
+    return false;
+  }
+  
+  // If it's a relative path starting with /, it's our backend
+  if (url.startsWith('/') && !url.startsWith('//')) {
+    return true;
+  }
+
+  // If it's an absolute URL, check if it goes to our API or AI base URL
+  const apiBase = import.meta.env.VITE_API_BASE_URL;
+  const aiBase = import.meta.env.VITE_AI_API_BASE_URL;
+
+  if (apiBase && url.startsWith(apiBase)) return true;
+  if (aiBase && url.startsWith(aiBase)) return true;
+
+  // Fallback: if it's localhost or dev-gateway, it's our backend
+  if (url.includes('localhost') || url.includes('familyaconnect.com')) {
+    return true;
+  }
+
+  return false;
+};
+
+export const shouldSkipTracking = (url: string | undefined): boolean => {
+  if (!url) return true;
+  if (!isBackendApi(url)) return true;
   const normalized = normalizeUrl(url);
   return IGNORED_API_PATTERNS.some((pattern) => normalized === pattern || normalized.endsWith(pattern));
 };
