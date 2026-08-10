@@ -1256,10 +1256,19 @@ export interface SuggestionsResult {
 }
 
 export async function fetchSuggestions(treeId: string): Promise<SuggestionsResult> {
+  /*
   const url = `${API_BASE_URL}/tree/${treeId}/suggestions`;
   const response = await apiFetch(url);
   if (!response.ok) throw new Error(`API error: ${response.status}`);
   return response.json();
+  */
+  return {
+    suggestions: [],
+    completenessPercent: 0,
+    totalPersons: 0,
+    tiers: [],
+    stats: {}
+  };
 }
 
 export interface DataQualityIssue {

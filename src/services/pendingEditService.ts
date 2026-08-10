@@ -38,9 +38,12 @@ export async function setReviewMode(treeId: string, enabled: boolean): Promise<v
 }
 
 export async function getPendingEditCount(treeId: string): Promise<number> {
+  /*
   const res = await apiFetch(`/tree/${treeId}/pending-edit-count`);
   const data = await res.json();
   return data.count;
+  */
+  return 0;
 }
 
 export async function listPendingEdits(

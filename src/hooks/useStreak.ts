@@ -46,6 +46,7 @@ function saveCache(userId: string, data: StreakData): void {
 }
 
 async function apiGet(): Promise<StreakData | null> {
+  /*
   const token = getAuthToken()
   if (!token) return null
   try {
@@ -65,9 +66,12 @@ async function apiGet(): Promise<StreakData | null> {
       freezeUsedMonth: d.freezeUsedMonth ?? undefined,
     }
   } catch { return null }
+  */
+  return null
 }
 
 async function apiPostActivity(): Promise<StreakData | null> {
+  /*
   const token = getAuthToken()
   if (!token) return null
   try {
@@ -86,6 +90,8 @@ async function apiPostActivity(): Promise<StreakData | null> {
       freezesAvailable: d.freezesAvailable,
     }
   } catch { return null }
+  */
+  return null
 }
 
 export function useStreak(userId: string | undefined): UseStreakResult {

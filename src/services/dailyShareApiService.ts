@@ -228,6 +228,7 @@ export async function createPostAI(data: {
  * has had no posts recently.
  */
 export async function fetchPostOfTheDay(): Promise<SharePost | null> {
+  /*
   try {
     const response = await apiFetch(`${API_BASE_URL}/share/post-of-day`);
     if (!response.ok) return null;
@@ -236,6 +237,8 @@ export async function fetchPostOfTheDay(): Promise<SharePost | null> {
   } catch {
     return null;
   }
+  */
+  return null;
 }
 
 // ============================================================================
@@ -243,12 +246,19 @@ export async function fetchPostOfTheDay(): Promise<SharePost | null> {
 // ============================================================================
 
 export async function fetchFeedPreferences(): Promise<FeedPreferences> {
+  /*
   const response = await apiFetch(`${API_BASE_URL}/share/preferences`);
   if (!response.ok) throw new Error('Failed to fetch feed preferences');
   return response.json();
+  */
+  return {
+    preferredLanguages: [],
+    languageMode: 'soft'
+  };
 }
 
 export async function updateFeedPreferences(prefs: FeedPreferences): Promise<FeedPreferences> {
+  /*
   const response = await apiFetch(`${API_BASE_URL}/share/preferences`, {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
@@ -256,6 +266,8 @@ export async function updateFeedPreferences(prefs: FeedPreferences): Promise<Fee
   });
   if (!response.ok) throw new Error('Failed to update feed preferences');
   return response.json();
+  */
+  return prefs;
 }
 
 // ============================================================================

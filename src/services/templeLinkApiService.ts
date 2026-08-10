@@ -34,8 +34,11 @@ async function apiFetch(path: string, options?: RequestInit) {
  * Get all temple links for a tree (with person info).
  */
 export async function getTreeTempleLinks(treeId: string): Promise<TempleLinkWithPerson[]> {
+  /*
   const res = await apiFetch(`/tree/${treeId}/temple-links`);
   return res.json();
+  */
+  return [];
 }
 
 /**
@@ -176,8 +179,11 @@ export async function getTempleMemories(
 export async function getTreeTempleMemoryCounts(
   treeId: string
 ): Promise<Record<string, number>> {
+  /*
   const res = await apiFetch(`/tree/${treeId}/temple-memory-counts`);
   return res.json();
+  */
+  return {};
 }
 
 /**
