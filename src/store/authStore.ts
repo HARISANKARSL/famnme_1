@@ -2,7 +2,7 @@ import { create } from 'zustand'
 import { getAuthToken, setAuthToken, clearAuthToken, getCachedUser, setCachedUser, isTokenExpired } from '@/lib/auth'
 import { API_BASE_URL } from '@/config/api'
 import { userApi } from '@/api/endpoints'
-import { trackEvent, trackUserRetention } from '@/services/firebase/analytics.service'
+import { trackEvent, trackUserRetention, setAnalyticsUserId } from '@/services/firebase/analytics.service'
 
 export interface AppUser {
   id: string
@@ -103,6 +103,7 @@ export const useAuthStore = create<AuthState>((set) => ({
     
     // Track logout event
     trackEvent('logout', { user_type: 'regular' });
+    setAnalyticsUserId(null);
 
     const { logout } = await import('@/services/keycloak').then(m => ({ logout: () => m.default.logout() }));
     clearAuthToken();

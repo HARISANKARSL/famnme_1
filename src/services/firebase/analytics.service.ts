@@ -1,16 +1,23 @@
-import { logEvent } from "firebase/analytics";
+import { logEvent, setUserId as firebaseSetUserId, setUserProperties as firebaseSetUserProperties } from "firebase/analytics";
 import { analytics, analyticsReady } from "./firebase";
 import axios, { type AxiosInstance } from "axios";
 import { normalizeUrl, shouldSkipTracking } from "@/utils/proxyIdCleaner";
 
 // Queue for events tracked before Firebase Analytics finishes initializing
 const eventQueue: { eventName: string; params?: Record<string, unknown> }[] = [];
+const propertyQueue: (() => void)[] = [];
 let isReady = false;
 
 // When initialization completes, flush all queued events
 analyticsReady.then((initializedAnalytics) => {
     isReady = true;
     if (initializedAnalytics) {
+        while (propertyQueue.length > 0) {
+            const fn = propertyQueue.shift();
+            if (fn) {
+                try { fn(); } catch (e) { console.warn("[Firebase] Failed to flush property:", e); }
+            }
+        }
         while (eventQueue.length > 0) {
             const queued = eventQueue.shift();
             if (queued) {
@@ -21,8 +28,41 @@ analyticsReady.then((initializedAnalytics) => {
     } else {
         console.warn("[Firebase] Analytics initialization failed. Queued events cleared.");
         eventQueue.length = 0;
+        propertyQueue.length = 0;
     }
 });
+
+export const setAnalyticsUserId = (userId: string | null) => {
+    if (!isReady) {
+        console.log("[Firebase] Queuing User ID (waiting for initialization):", userId);
+        propertyQueue.push(() => setAnalyticsUserId(userId));
+        return;
+    }
+    if (analytics) {
+        console.log("[Firebase] Setting User ID:", userId);
+        firebaseSetUserId(analytics, userId);
+    }
+};
+
+export const setAnalyticsUserProperties = (properties: Record<string, unknown>) => {
+    if (!isReady) {
+        console.log("[Firebase] Queuing User Properties (waiting for initialization):", properties);
+        propertyQueue.push(() => setAnalyticsUserProperties(properties));
+        return;
+    }
+    if (analytics) {
+        console.log("[Firebase] Setting User Properties:", properties);
+        firebaseSetUserProperties(analytics, properties);
+    }
+};
+
+export const updateTreeUserProperties = (hasTree: boolean, memberCount: number) => {
+    setAnalyticsUserProperties({
+        family_created: hasTree ? "Yes" : "No",
+        family_members_count: memberCount
+    });
+};
+
 
 export const trackEvent = (
     eventName: string,
@@ -108,6 +148,10 @@ interface RetentionData {
 export const trackUserRetention = (userId?: string) => {
   if (typeof window === "undefined" || !window.localStorage) return;
 
+  if (userId) {
+    setAnalyticsUserId(userId);
+  }
+
   const key = userId ? `fc_retention_${userId}` : "fc_retention_global";
   const today = new Date().toISOString().slice(0, 10);
 
@@ -129,6 +173,9 @@ export const trackUserRetention = (userId?: string) => {
     return Math.floor((utcTo - utcFrom) / (1000 * 60 * 60 * 24));
   };
 
+  let firstSeenDate = today;
+  let userType: "New" | "Returning" = "New";
+
   if (!data || !data.firstSeenDate) {
     const initialData: RetentionData = {
       firstSeenDate: today,
@@ -141,7 +188,25 @@ export const trackUserRetention = (userId?: string) => {
     } catch (e) {
       /* ignore */
     }
+
+    if (userId) {
+      setAnalyticsUserProperties({
+        registration_date: today,
+        user_type: "New"
+      });
+    }
     return;
+  }
+
+  firstSeenDate = data.firstSeenDate;
+  const daysSinceFirstSeen = getDaysDifference(firstSeenDate, today);
+  userType = daysSinceFirstSeen > 0 ? "Returning" : "New";
+
+  if (userId) {
+    setAnalyticsUserProperties({
+      registration_date: firstSeenDate,
+      user_type: userType
+    });
   }
 
   // Already evaluated today

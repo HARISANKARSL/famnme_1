@@ -8,6 +8,7 @@
 import { create } from 'zustand';
 import { neo4jService, type Person, type Union, type FamilyTree, type PersonInput, type UnionInput } from '@/services/neo4jService';
 import type { Relationship } from '@/services/elkLayoutService';
+import { updateTreeUserProperties } from '@/services/firebase/analytics.service';
 
 interface Neo4jTreeState {
   tree: FamilyTree | null;
@@ -177,3 +178,10 @@ export const useNeo4jTreeStore = create<Neo4jTreeState>((set, _get) => ({
     }
   },
 }));
+
+// Sync family tree properties to Firebase Analytics reactively when store changes
+useNeo4jTreeStore.subscribe((state) => {
+  const hasTree = !!state.tree;
+  const count = state.persons.length;
+  updateTreeUserProperties(hasTree, count);
+});
