@@ -358,7 +358,7 @@ export function CreatePostWidget({
       ? (mediaFiles[0].type.startsWith('video/') ? "Video" : "Image")
       : videoInfo ? "Video" : (hasLink ? "Link" : "None");
 
-    trackEvent("create_post_started", {
+    trackEvent("feed_post_started", {
       post_id: null,
       post_type: postType,
       media_type: mediaType,
@@ -394,7 +394,7 @@ export function CreatePostWidget({
         personName: sessionFullName || undefined,
       })
 
-      trackEvent("create_post_completed", {
+      trackEvent("feed_post_completed", {
         post_id: post.postId,
         post_type: post.postType,
         media_type: mediaType,
@@ -410,7 +410,7 @@ export function CreatePostWidget({
         closeMode()
       }, 2000)
     } catch (err: any) {
-      trackEvent("create_post_failed", {
+      trackEvent("feed_post_failed", {
         post_id: null,
         post_type: postType,
         media_type: mediaType,

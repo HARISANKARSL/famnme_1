@@ -183,7 +183,7 @@ export function ShareComposer({ treeId, authorName, authorAvatarUrl, onPostCreat
     const postType = getPostType();
     const mediaType = videoFile ? "Video" : mediaFiles.length > 0 ? "Image" : "None";
 
-    trackEvent("create_post_started", {
+    trackEvent("feed_post_started", {
       post_id: null,
       post_type: postType,
       media_type: mediaType,
@@ -204,7 +204,7 @@ export function ShareComposer({ treeId, authorName, authorAvatarUrl, onPostCreat
         contentLanguage: contentLanguage !== 'auto' ? contentLanguage : undefined,
       });
 
-      trackEvent("create_post_completed", {
+      trackEvent("feed_post_completed", {
         post_id: response.postId,
         post_type: response.postType,
         media_type: mediaType,
@@ -222,7 +222,7 @@ export function ShareComposer({ treeId, authorName, authorAvatarUrl, onPostCreat
 
       onPostCreated();
     } catch (err) {
-      trackEvent("create_post_failed", {
+      trackEvent("feed_post_failed", {
         post_id: null,
         post_type: postType,
         media_type: mediaType,
